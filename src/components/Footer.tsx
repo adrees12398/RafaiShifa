@@ -1,7 +1,6 @@
 import React from 'react';
 import { NavTab } from '../types';
 import { 
-  Leaf, 
   Phone, 
   Mail, 
   MapPin, 
@@ -58,8 +57,27 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
           {/* Brand Info */}
           <div className="space-y-4">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-lg bg-[#A1A696] flex items-center justify-center text-[#2F3428] font-bold">
-                <Leaf className="w-6 h-6 text-[#2F3428]" />
+              <div className="w-10 h-10 rounded-full bg-[#525A43] flex items-center justify-center border-2 border-[#A1A696] overflow-hidden">
+                <svg viewBox="0 0 100 100" className="w-8 h-8">
+                  {/* Circular background */}
+                  <circle cx="50" cy="50" r="48" fill="#525A43" stroke="#A1A696" strokeWidth="2"/>
+                  
+                  {/* RSK Letters */}
+                  <text x="50" y="45" textAnchor="middle" fill="#A1A696" fontSize="32" fontWeight="bold" fontFamily="serif">RSK</text>
+                  
+                  {/* Mortar and Pestle icon */}
+                  <g transform="translate(50, 62)">
+                    <ellipse cx="0" cy="8" rx="12" ry="3" fill="none" stroke="#A1A696" strokeWidth="1.5"/>
+                    <path d="M -10 8 L -8 -5 Q 0 -12 8 -5 L 10 8" fill="none" stroke="#A1A696" strokeWidth="1.5"/>
+                    <line x1="-3" y1="-2" x2="3" y2="2" stroke="#A1A696" strokeWidth="1.5"/>
+                  </g>
+                  
+                  {/* Decorative leaves */}
+                  <g fill="#A1A696" opacity="0.8">
+                    <ellipse cx="25" cy="20" rx="4" ry="2" transform="rotate(-30 25 20)"/>
+                    <ellipse cx="75" cy="20" rx="4" ry="2" transform="rotate(30 75 20)"/>
+                  </g>
+                </svg>
               </div>
               <span className="text-2xl font-bold font-serif text-white tracking-tight">
                 Rafai<span className="text-[#A1A696]">Shifa</span>
