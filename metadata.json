@@ -1,0 +1,6 @@
+{
+  "name": "RafaiShifa - Tib & Herbal Medicine",
+  "description": "Authentic Unani & Islamic Herbal Medicine E-commerce Platform with Admin Dashboard, live order tracking, and product catalog.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

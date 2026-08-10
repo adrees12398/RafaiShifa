@@ -1,0 +1,247 @@
+import { initializeApp, getApps, getApp } from 'firebase/app';
+import { 
+  getFirestore, 
+  collection, 
+  addDoc, 
+  getDocs, 
+  updateDoc, 
+  doc, 
+  query, 
+  orderBy, 
+  onSnapshot,
+  serverTimestamp 
+} from 'firebase/firestore';
+import { Order, ContactMessage, Product } from '../types';
+import { INITIAL_PRODUCTS } from '../data/initialData';
+
+// Standard Firebase config - can be configured via environment variables or fallback
+const firebaseConfig = {
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || "AIzaSyDummyKeyForRafaiShifaTibStore2026",
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || "rafaishifa-tib.firebaseapp.com",
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || "rafaishifa-tib",
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || "rafaishifa-tib.appspot.com",
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || "281875481666",
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || "1:281875481666:web:rafaishifa2026key"
+};
+
+// Initialize Firebase
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+export const db = getFirestore(app);
+
+// Local persistence storage keys for instant local fallback & seamless sync
+const LOCAL_ORDERS_KEY = 'rafaishifa_orders_v1';
+const LOCAL_MESSAGES_KEY = 'rafaishifa_messages_v1';
+const LOCAL_PRODUCTS_KEY = 'rafaishifa_products_v1';
+
+// Get local stored orders
+const getLocalOrders = (): Order[] => {
+  try {
+    const data = localStorage.getItem(LOCAL_ORDERS_KEY);
+    return data ? JSON.parse(data) : [];
+  } catch {
+    return [];
+  }
+};
+
+const saveLocalOrders = (orders: Order[]) => {
+  try {
+    localStorage.setItem(LOCAL_ORDERS_KEY, JSON.stringify(orders));
+  } catch (e) {
+    console.error('LocalStorage save error:', e);
+  }
+};
+
+// Place Order to Firestore & Local state
+export async function createOrder(
+  orderData: Omit<Order, 'id' | 'orderId' | 'createdAt' | 'status'>
+): Promise<Order> {
+  const generatedId = 'ORD-' + Math.floor(100000 + Math.random() * 900000);
+  const nowIso = new Date().toISOString();
+
+  const newOrder: Order = {
+    ...orderData,
+    id: generatedId,
+    orderId: generatedId,
+    status: 'Pending',
+    createdAt: nowIso
+  };
+
+  // Save locally first for zero-latency response
+  const existingLocal = getLocalOrders();
+  saveLocalOrders([newOrder, ...existingLocal]);
+
+  // Firestore Write
+  try {
+    const ordersRef = collection(db, 'orders');
+    const firestoreData = {
+      orderId: generatedId,
+      customerName: orderData.customerName,
+      phone: orderData.phone,
+      address: orderData.address,
+      cartItems: orderData.cartItems,
+      totalPrice: orderData.totalPrice,
+      paymentMethod: orderData.paymentMethod || 'Cash on Delivery',
+      notes: orderData.notes || '',
+      status: 'Pending',
+      createdAt: new Date().toISOString(),
+      timestamp: serverTimestamp()
+    };
+
+    const docRef = await addDoc(ordersRef, firestoreData);
+    newOrder.id = docRef.id;
+  } catch (err) {
+    console.warn('Firestore write warning (using resilient local store):', err);
+  }
+
+  return newOrder;
+}
+
+// Subscribe or Fetch Real-time Orders
+export function subscribeOrders(onUpdate: (orders: Order[]) => void): () => void {
+  let unsubscribe = () => {};
+
+  try {
+    const ordersRef = collection(db, 'orders');
+    const q = query(ordersRef, orderBy('createdAt', 'desc'));
+
+    unsubscribe = onSnapshot(
+      q,
+      (snapshot) => {
+        const firestoreOrders: Order[] = snapshot.docs.map((d) => {
+          const data = d.data();
+          return {
+            id: d.id,
+            orderId: data.orderId || d.id,
+            customerName: data.customerName || 'Anonymous',
+            phone: data.phone || 'N/A',
+            address: data.address || 'N/A',
+            cartItems: data.cartItems || [],
+            totalPrice: Number(data.totalPrice) || 0,
+            status: data.status || 'Pending',
+            paymentMethod: data.paymentMethod || 'Cash on Delivery',
+            notes: data.notes || '',
+            createdAt: data.createdAt || new Date().toISOString()
+          };
+        });
+
+        // Merge with local orders in case of offline additions
+        const local = getLocalOrders();
+        const mergedMap = new Map<string, Order>();
+        
+        // Add local first
+        local.forEach((o) => mergedMap.set(o.orderId || o.id, o));
+        // Firestore overrides
+        firestoreOrders.forEach((o) => mergedMap.set(o.orderId || o.id, o));
+
+        const mergedList = Array.from(mergedMap.values()).sort(
+          (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        );
+
+        onUpdate(mergedList);
+      },
+      (error) => {
+        console.warn('Firestore snapshot error, reading local fallback:', error);
+        onUpdate(getLocalOrders());
+      }
+    );
+  } catch (e) {
+    console.warn('Firestore connection fallback:', e);
+    onUpdate(getLocalOrders());
+  }
+
+  return unsubscribe;
+}
+
+// Update Order Status in Firestore & Local storage
+export async function updateOrderStatusInDb(
+  orderDocIdOrOrderId: string,
+  newStatus: 'Pending' | 'Delivered' | 'Cancelled' | 'Processing'
+): Promise<void> {
+  // Update local storage
+  const localOrders = getLocalOrders();
+  const updatedLocal = localOrders.map((ord) => {
+    if (ord.id === orderDocIdOrOrderId || ord.orderId === orderDocIdOrOrderId) {
+      return { ...ord, status: newStatus };
+    }
+    return ord;
+  });
+  saveLocalOrders(updatedLocal);
+
+  // Update Firestore
+  try {
+    const orderRef = doc(db, 'orders', orderDocIdOrOrderId);
+    await updateDoc(orderRef, { status: newStatus });
+  } catch (e) {
+    console.warn('Firestore update failed, saved to local cache:', e);
+  }
+}
+
+// Send Contact Message
+export async function sendContactMessage(
+  msg: Omit<ContactMessage, 'id' | 'createdAt' | 'status'>
+): Promise<void> {
+  const newMsg: ContactMessage = {
+    ...msg,
+    id: 'MSG-' + Date.now(),
+    createdAt: new Date().toISOString(),
+    status: 'Unread'
+  };
+
+  // Local storage backup
+  try {
+    const existing = JSON.parse(localStorage.getItem(LOCAL_MESSAGES_KEY) || '[]');
+    localStorage.setItem(LOCAL_MESSAGES_KEY, JSON.stringify([newMsg, ...existing]));
+  } catch {}
+
+  // Firestore
+  try {
+    const messagesRef = collection(db, 'messages');
+    await addDoc(messagesRef, {
+      ...msg,
+      createdAt: new Date().toISOString(),
+      status: 'Unread',
+      timestamp: serverTimestamp()
+    });
+  } catch (e) {
+    console.warn('Firestore message save note:', e);
+  }
+}
+
+// Fetch Messages
+export async function fetchContactMessages(): Promise<ContactMessage[]> {
+  try {
+    const messagesRef = collection(db, 'messages');
+    const snapshot = await getDocs(messagesRef);
+    if (!snapshot.empty) {
+      return snapshot.docs.map((d) => ({
+        id: d.id,
+        ...(d.data() as Omit<ContactMessage, 'id'>)
+      }));
+    }
+  } catch {}
+
+  try {
+    return JSON.parse(localStorage.getItem(LOCAL_MESSAGES_KEY) || '[]');
+  } catch {
+    return [];
+  }
+}
+
+// Products Catalog Management
+export function getStoredProducts(): Product[] {
+  try {
+    const cached = localStorage.getItem(LOCAL_PRODUCTS_KEY);
+    if (cached) {
+      return JSON.parse(cached);
+    }
+  } catch {}
+  return INITIAL_PRODUCTS;
+}
+
+export function saveStoredProducts(products: Product[]): void {
+  try {
+    localStorage.setItem(LOCAL_PRODUCTS_KEY, JSON.stringify(products));
+  } catch (e) {
+    console.error('Failed to save products locally:', e);
+  }
+}
