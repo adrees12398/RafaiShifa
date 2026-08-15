@@ -49,21 +49,21 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#525A43] text-white shadow-md border-b border-[#3F4633]">
+    <header className="sticky top-0 z-40 bg-white shadow-md border-b border-gray-200">
       {/* Top Announcement Bar */}
-      <div className="bg-[#3F4633] text-stone-100 text-xs py-1.5 px-4 border-b border-[#525A43]">
+      <div className="bg-[#525A43] text-white text-xs py-1.5 px-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-1 text-center sm:text-left">
           <div className="flex items-center justify-center gap-2 font-medium">
             <span className="inline-block w-2 h-2 rounded-full bg-[#A1A696] animate-pulse"></span>
             <span> Authentic Unani & Tib-e-Nabvi Herbal Medicine Store</span>
             <span className="hidden md:inline text-[#A1A696] font-serif">| شفاء من اللہ</span>
           </div>
-          <div className="flex items-center gap-4 text-stone-200">
-            <a href="tel:+923004652599" className="flex items-center gap-1 hover:text-[#A1A696] transition-colors">
+          <div className="flex items-center gap-4 text-gray-200">
+            <a href="tel:+923004652599" className="flex items-center gap-1 hover:text-white transition-colors">
               <PhoneCall className="w-3.5 h-3.5 text-[#A1A696]" />
               <span>+92 300 4652599</span>
             </a>
-            <div className="flex items-center gap-1 text-stone-200">
+            <div className="flex items-center gap-1 text-gray-200">
               <ShieldCheck className="w-3.5 h-3.5 text-[#A1A696]" />
               <span>100% Pure & Organic</span>
             </div>
@@ -78,10 +78,10 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Logo & Brand Name */}
           <div 
             onClick={() => handleNavClick('home')}
-            className="flex items-center gap-3 cursor-pointer group py-2"
+            className="flex items-center gap-2 sm:gap-3 cursor-pointer group py-2"
           >
-            <div className="w-12 h-12 rounded-full bg-[#525A43] flex items-center justify-center shadow-md border-2 border-[#A1A696] group-hover:scale-105 transition-transform duration-200 overflow-hidden">
-              <svg viewBox="0 0 100 100" className="w-10 h-10">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#525A43] flex items-center justify-center shadow-md border-2 border-[#A1A696] group-hover:scale-105 transition-transform duration-200 overflow-hidden shrink-0">
+              <svg viewBox="0 0 100 100" className="w-8 h-8 sm:w-10 sm:h-10">
                 {/* Circular background */}
                 <circle cx="50" cy="50" r="48" fill="#525A43" stroke="#A1A696" strokeWidth="2"/>
                 
@@ -102,16 +102,16 @@ export const Navbar: React.FC<NavbarProps> = ({
                 </g>
               </svg>
             </div>
-            <div>
-              <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold tracking-tight text-white font-serif">
+            <div className="min-w-0">
+              <div className="flex items-baseline gap-1 sm:gap-2">
+                <span className="text-lg sm:text-2xl font-bold tracking-tight text-white font-serif truncate">
                   Rafai<span className="text-[#A1A696]">Shifa</span>
                 </span>
-                <span className="text-xs px-2 py-0.5 rounded-full bg-[#3F4633] text-[#A1A696] font-medium border border-[#A1A696]/30 hidden sm:inline-block">
+                <span className="text-xs px-2 py-0.5 rounded-full bg-[#3F4633] text-[#A1A696] font-medium border border-[#A1A696]/30 hidden sm:inline-block shrink-0">
                   طب و حکمت
                 </span>
               </div>
-              <p className="text-xs text-[#A1A696] tracking-wide font-sans">
+              <p className="text-[10px] sm:text-xs text-[#A1A696] tracking-wide font-sans truncate">
                 Unani & Islamic Herbal Solutions
               </p>
             </div>
@@ -161,7 +161,7 @@ export const Navbar: React.FC<NavbarProps> = ({
           </nav>
 
           {/* Right Action Icons */}
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-3">
             
             {/* Search Trigger for Mobile */}
             <button
@@ -169,7 +169,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="p-2 rounded-lg text-[#A1A696] hover:text-white hover:bg-[#3F4633] lg:hidden"
               aria-label="Toggle Search"
             >
-              <Search className="w-5 h-5" />
+              <Search className="w-4 h-4 sm:w-5 sm:h-5" />
             </button>
 
             {/* Admin Key Button if not on admin tab */}
@@ -189,7 +189,7 @@ export const Navbar: React.FC<NavbarProps> = ({
                 }`}
                 title={isAdminLoggedIn ? "Admin Logged In" : "Admin Login"}
               >
-                <UserCheck className="w-4 h-4" />
+                <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                 <span className="hidden xl:inline">{isAdminLoggedIn ? "Admin Active" : "Admin"}</span>
               </button>
             )}
@@ -197,12 +197,12 @@ export const Navbar: React.FC<NavbarProps> = ({
             {/* Cart Button */}
             <button
               onClick={onOpenCart}
-              className="relative bg-[#A1A696] hover:bg-white text-[#2F3428] font-extrabold px-4 py-2.5 rounded-xl shadow-md flex items-center gap-2.5 transition-all transform active:scale-95 border border-white/20"
+              className="relative bg-[#A1A696] hover:bg-white text-[#2F3428] font-extrabold px-2.5 py-2 sm:px-4 sm:py-2.5 rounded-xl shadow-md flex items-center gap-1.5 sm:gap-2.5 transition-all transform active:scale-95 border border-white/20"
               aria-label="Shopping Cart"
             >
-              <ShoppingBag className="w-5 h-5 text-[#2F3428]" />
+              <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-[#2F3428]" />
               <span className="hidden sm:inline text-sm">Cart</span>
-              <span className="bg-[#525A43] text-white text-xs font-bold w-5 h-5 rounded-full flex items-center justify-center border border-[#A1A696]">
+              <span className="bg-[#525A43] text-white text-[10px] sm:text-xs font-bold w-4 h-4 sm:w-5 sm:h-5 rounded-full flex items-center justify-center border border-[#A1A696]">
                 {cartCount}
               </span>
             </button>
@@ -213,7 +213,7 @@ export const Navbar: React.FC<NavbarProps> = ({
               className="p-2 rounded-xl text-stone-200 hover:text-white hover:bg-[#3F4633] md:hidden"
               aria-label="Toggle Navigation Menu"
             >
-              {mobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+              {mobileMenuOpen ? <X className="w-5 h-5 sm:w-6 sm:h-6" /> : <Menu className="w-5 h-5 sm:w-6 sm:h-6" />}
             </button>
           </div>
         </div>

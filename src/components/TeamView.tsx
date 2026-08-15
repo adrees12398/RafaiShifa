@@ -8,7 +8,9 @@ import {
   Activity,
   Heart,
   Sparkles,
-  ShieldCheck
+  ShieldCheck,
+  Calendar,
+  Stethoscope
 } from 'lucide-react';
 
 export const TeamView: React.FC = () => {
@@ -18,74 +20,74 @@ export const TeamView: React.FC = () => {
     <div className="space-y-12 pb-16">
       
       {/* Header */}
-      <div className="bg-[#525A43] text-white rounded-3xl p-8 sm:p-12 border border-[#A1A696]/30 shadow-xl text-center max-w-4xl mx-auto space-y-3">
-        <span className="px-3.5 py-1 rounded-full text-xs font-bold bg-[#A1A696] text-[#2F3428] uppercase tracking-wider inline-block">
+      <div className="bg-[#525A43] text-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 border border-[#A1A696]/30 shadow-xl text-center max-w-4xl mx-auto space-y-2 sm:space-y-3">
+        <span className="px-2.5 sm:px-3.5 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold bg-[#A1A696] text-[#2F3428] uppercase tracking-wider inline-block">
           طبیبِ اعلیٰ - اطبائے یونانی و ہومیوپیتھک
         </span>
-        <h1 className="text-3xl sm:text-4xl font-extrabold font-serif tracking-tight">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-serif tracking-tight">
           Our Chief Hakeem & Lead Physician
         </h1>
-        <p className="text-xs sm:text-sm text-stone-200 leading-relaxed max-w-xl mx-auto">
+        <p className="text-[11px] sm:text-xs md:text-sm text-stone-200 leading-relaxed max-w-xl mx-auto">
           Meet Chief Physician Dr. Hakeem Hafiz Mohsin Ali, Gold Medalist and National Councillor, committed to authentic natural healing and Prophetic Tibb.
         </p>
       </div>
 
       {/* Featured Chief Physician Section: Dr. Hakeem Hafiz Mohsin Ali */}
-      <section className="bg-white rounded-3xl overflow-hidden border border-[#A1A696]/40 shadow-xl relative">
-        <div className="bg-[#525A43] text-white px-8 py-5 flex items-center justify-between border-b border-[#A1A696]/30">
-          <div className="flex items-center gap-2">
-            <Medal className="w-5 h-5 text-[#A1A696]" />
-            <span className="text-xs font-extrabold text-[#A1A696] uppercase tracking-wider font-serif">
+      <section className="bg-white rounded-2xl sm:rounded-3xl overflow-hidden border border-[#A1A696]/40 shadow-xl relative">
+        <div className="bg-[#525A43] text-white px-4 sm:px-6 md:px-8 py-4 sm:py-5 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 sm:gap-0 border-b border-[#A1A696]/30">
+          <div className="flex items-center gap-1.5 sm:gap-2">
+            <Medal className="w-4 h-4 sm:w-5 sm:h-5 text-[#A1A696]" />
+            <span className="text-[10px] sm:text-xs font-extrabold text-[#A1A696] uppercase tracking-wider font-serif">
               Lead Physician & Chief Consultant
             </span>
           </div>
-          <span className="px-3 py-1 rounded-full text-[11px] font-bold bg-[#A1A696] text-[#2F3428]">
+          <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-[11px] font-bold bg-[#A1A696] text-[#2F3428]">
             Gold Medalist
           </span>
         </div>
 
-        <div className="p-6 sm:p-10 grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
+        <div className="p-4 sm:p-6 md:p-10 grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 items-start">
           
           {/* Photo & Quick Info */}
-          <div className="lg:col-span-5 space-y-4">
-            <div className="relative rounded-2xl overflow-hidden border-2 border-[#A1A696]/50 shadow-lg aspect-4/5 bg-stone-100">
+          <div className="lg:col-span-5 space-y-3 sm:space-y-4">
+            <div className="relative rounded-xl sm:rounded-2xl overflow-hidden border-2 border-[#A1A696]/50 shadow-lg aspect-4/5 bg-stone-100">
               <img 
                 src={headPhysician.imageUrl} 
                 alt={headPhysician.name}
                 className="w-full h-full object-cover object-top"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-[#2F3428] via-[#2F3428]/20 to-transparent flex flex-col justify-end p-5 text-white">
-                <div className="inline-block px-2.5 py-1 rounded-md bg-[#A1A696] text-[#2F3428] text-[11px] font-bold w-max mb-1">
+              <div className="absolute inset-0 bg-gradient-to-t from-[#2F3428] via-[#2F3428]/20 to-transparent flex flex-col justify-end p-4 sm:p-5 text-white">
+                <div className="inline-block px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-[#A1A696] text-[#2F3428] text-[10px] sm:text-[11px] font-bold w-max mb-1">
                   National Councillor – Islamabad
                 </div>
-                <h2 className="text-2xl font-extrabold font-serif text-white">
+                <h2 className="text-xl sm:text-2xl font-extrabold font-serif text-white">
                   {headPhysician.name}
                 </h2>
-                <p className="text-xs text-[#A1A696] font-medium">
+                <p className="text-[11px] sm:text-xs text-[#A1A696] font-medium">
                   {headPhysician.title}
                 </p>
               </div>
             </div>
 
             {/* Quick Stats Bar */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3.5 bg-stone-50 rounded-xl border border-[#A1A696]/30 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-[#525A43] text-white flex items-center justify-center shrink-0">
-                  <Calendar className="w-5 h-5" />
+            <div className="grid grid-cols-2 gap-2 sm:gap-3">
+              <div className="p-2.5 sm:p-3.5 bg-stone-50 rounded-lg sm:rounded-xl border border-[#A1A696]/30 flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#525A43] text-white flex items-center justify-center shrink-0">
+                  <Calendar className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div>
-                  <div className="text-[10px] text-[#525A43] font-bold uppercase">Clinical Practice</div>
-                  <div className="text-xs font-extrabold text-[#2F3428]">25+ Years Exp.</div>
+                <div className="min-w-0">
+                  <div className="text-[9px] sm:text-[10px] text-[#525A43] font-bold uppercase">Clinical Practice</div>
+                  <div className="text-[11px] sm:text-xs font-extrabold text-[#2F3428] truncate">25+ Years Exp.</div>
                 </div>
               </div>
 
-              <div className="p-3.5 bg-stone-50 rounded-xl border border-[#A1A696]/30 flex items-center gap-3">
-                <div className="w-9 h-9 rounded-lg bg-[#A1A696] text-[#2F3428] flex items-center justify-center shrink-0">
-                  <Award className="w-5 h-5" />
+              <div className="p-2.5 sm:p-3.5 bg-stone-50 rounded-lg sm:rounded-xl border border-[#A1A696]/30 flex items-center gap-2 sm:gap-3">
+                <div className="w-8 h-8 sm:w-9 sm:h-9 rounded-lg bg-[#A1A696] text-[#2F3428] flex items-center justify-center shrink-0">
+                  <Award className="w-4 h-4 sm:w-5 sm:h-5" />
                 </div>
-                <div>
-                  <div className="text-[10px] text-[#2F3428] font-bold uppercase">Honor</div>
-                  <div className="text-xs font-extrabold text-[#2F3428]">Gold Medalist</div>
+                <div className="min-w-0">
+                  <div className="text-[9px] sm:text-[10px] text-[#2F3428] font-bold uppercase">Honor</div>
+                  <div className="text-[11px] sm:text-xs font-extrabold text-[#2F3428]">Gold Medalist</div>
                 </div>
               </div>
             </div>
@@ -93,25 +95,25 @@ export const TeamView: React.FC = () => {
             {/* Book Session Button */}
             <a 
               href="tel:+923004652599"
-              className="w-full py-3.5 rounded-xl bg-[#525A43] text-white hover:bg-[#3F4633] font-extrabold text-sm flex items-center justify-center gap-2 shadow-md transition-all"
+              className="w-full py-3 sm:py-3.5 rounded-xl bg-[#525A43] text-white hover:bg-[#3F4633] font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-md transition-all"
             >
-              <Phone className="w-4 h-4 text-[#A1A696]" />
-              <span>Book Consultation with Dr. Hafiz Mohsin Ali</span>
+              <Phone className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#A1A696]" />
+              <span className="truncate">Book Consultation with Dr. Hafiz Mohsin Ali</span>
             </a>
           </div>
 
           {/* Detailed Info Column */}
-          <div className="lg:col-span-7 space-y-6">
+          <div className="lg:col-span-7 space-y-4 sm:space-y-6">
             
             {/* About Narrative Block */}
-            <div className="space-y-3">
-              <div className="flex items-center gap-2 text-[#525A43] border-b border-stone-200 pb-2">
-                <Stethoscope className="w-5 h-5 text-[#525A43]" />
-                <h3 className="text-xl font-extrabold font-serif text-[#2F3428]">
+            <div className="space-y-2 sm:space-y-3">
+              <div className="flex items-center gap-1.5 sm:gap-2 text-[#525A43] border-b border-stone-200 pb-2">
+                <Stethoscope className="w-4 h-4 sm:w-5 sm:h-5 text-[#525A43]" />
+                <h3 className="text-lg sm:text-xl font-extrabold font-serif text-[#2F3428]">
                   About Dr. Hakeem Hafiz Mohsin Ali
                 </h3>
               </div>
-              <div className="text-sm text-[#2F3428] leading-relaxed space-y-3">
+              <div className="text-xs sm:text-sm text-[#2F3428] leading-relaxed space-y-2 sm:space-y-3">
                 {headPhysician.bio.split('\n\n').map((paragraph, index) => (
                   <p key={index} className="text-[#2F3428] leading-relaxed">
                     {paragraph}

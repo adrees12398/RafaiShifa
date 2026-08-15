@@ -40,42 +40,42 @@ export const BlogView: React.FC = () => {
     <div className="space-y-8 pb-16">
       
       {/* Header Banner */}
-      <div className="bg-[#525A43] text-white rounded-3xl p-8 sm:p-12 border border-[#A1A696]/30 shadow-xl relative overflow-hidden">
-        <div className="max-w-3xl space-y-3 relative z-10">
-          <span className="px-3 py-1 rounded-full text-xs font-bold bg-[#A1A696] text-[#2F3428] inline-block uppercase tracking-wider">
+      <div className="bg-[#525A43] text-white rounded-2xl sm:rounded-3xl p-6 sm:p-8 md:p-12 border border-[#A1A696]/30 shadow-xl relative overflow-hidden">
+        <div className="max-w-3xl space-y-2 sm:space-y-3 relative z-10">
+          <span className="px-2.5 sm:px-3 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-bold bg-[#A1A696] text-[#2F3428] inline-block uppercase tracking-wider">
             طب و حکمت سائنس
           </span>
-          <h1 className="text-3xl sm:text-4xl font-extrabold font-serif tracking-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-extrabold font-serif tracking-tight">
             Tib-e-Nabvi & Herbal Medicine Knowledge Base
           </h1>
-          <p className="text-xs sm:text-sm text-stone-200 leading-relaxed">
+          <p className="text-[11px] sm:text-xs md:text-sm text-stone-200 leading-relaxed">
             Evidence-backed research, prophetic healthcare guidelines, and holistic herbal wellness tips written by qualified Unani Hakeems.
           </p>
         </div>
       </div>
 
       {/* Filter & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-center justify-between gap-4 bg-white p-4 rounded-2xl border border-stone-200 shadow-sm">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4 bg-white p-3 sm:p-4 rounded-xl sm:rounded-2xl border border-stone-200 shadow-sm">
         
         {/* Search */}
-        <div className="relative w-full sm:w-72">
+        <div className="relative w-full sm:w-64 md:w-72">
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search articles, remedies, herbs..."
-            className="w-full bg-[#F9F9F6] border border-stone-300 rounded-xl py-2 pl-9 pr-4 text-xs text-[#2F3428] focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+            className="w-full bg-[#F9F9F6] border border-stone-300 rounded-lg sm:rounded-xl py-2 pl-9 pr-4 text-xs text-[#2F3428] focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
           />
-          <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
+          <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-stone-400 absolute left-3 top-2.5" />
         </div>
 
         {/* Tag Filters */}
-        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto scrollbar-none">
+        <div className="flex items-center gap-1.5 overflow-x-auto w-full sm:w-auto scrollbar-none pb-1 sm:pb-0">
           {allTags.map((tag) => (
             <button
               key={tag}
               onClick={() => setSelectedTag(tag)}
-              className={`px-3 py-1.5 rounded-lg text-xs font-semibold whitespace-nowrap transition-colors ${
+              className={`px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg text-[10px] sm:text-xs font-semibold whitespace-nowrap transition-colors ${
                 selectedTag === tag
                   ? 'bg-[#525A43] text-white'
                   : 'bg-stone-100 text-[#2F3428] hover:bg-stone-200'
