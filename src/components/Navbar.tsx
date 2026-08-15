@@ -49,9 +49,9 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-white shadow-md border-b border-gray-200">
+    <header className="sticky top-0 z-40 bg-[#525A43] shadow-md border-b border-[#A1A696]/30">
       {/* Top Announcement Bar */}
-      <div className="bg-[#525A43] text-white text-xs py-1.5 px-4">
+      <div className="bg-[#3F4633] text-white text-xs py-1.5 px-4 border-b border-[#525A43]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-1 text-center sm:text-left">
           <div className="flex items-center justify-center gap-2 font-medium">
             <span className="inline-block w-2 h-2 rounded-full bg-[#A1A696] animate-pulse"></span>
@@ -72,7 +72,7 @@ export const Navbar: React.FC<NavbarProps> = ({
       </div>
 
       {/* Main Navigation Bar */}
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="bg-[#525A43] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-20">
           
           {/* Logo & Brand Name */}
@@ -80,19 +80,19 @@ export const Navbar: React.FC<NavbarProps> = ({
             onClick={() => handleNavClick('home')}
             className="flex items-center gap-2 sm:gap-3 cursor-pointer group py-2"
           >
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-[#525A43] flex items-center justify-center shadow-md border-2 border-[#A1A696] group-hover:scale-105 transition-transform duration-200 overflow-hidden shrink-0">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-full bg-white flex items-center justify-center shadow-md border-2 border-[#A1A696] group-hover:scale-105 transition-transform duration-200 overflow-hidden shrink-0">
               <svg viewBox="0 0 100 100" className="w-8 h-8 sm:w-10 sm:h-10">
                 {/* Circular background */}
-                <circle cx="50" cy="50" r="48" fill="#525A43" stroke="#A1A696" strokeWidth="2"/>
+                <circle cx="50" cy="50" r="48" fill="white" stroke="#A1A696" strokeWidth="2"/>
                 
                 {/* RSK Letters */}
-                <text x="50" y="45" textAnchor="middle" fill="#A1A696" fontSize="32" fontWeight="bold" fontFamily="serif">RSK</text>
+                <text x="50" y="45" textAnchor="middle" fill="#525A43" fontSize="32" fontWeight="bold" fontFamily="serif">RSK</text>
                 
                 {/* Mortar and Pestle icon */}
                 <g transform="translate(50, 62)">
-                  <ellipse cx="0" cy="8" rx="12" ry="3" fill="none" stroke="#A1A696" strokeWidth="1.5"/>
-                  <path d="M -10 8 L -8 -5 Q 0 -12 8 -5 L 10 8" fill="none" stroke="#A1A696" strokeWidth="1.5"/>
-                  <line x1="-3" y1="-2" x2="3" y2="2" stroke="#A1A696" strokeWidth="1.5"/>
+                  <ellipse cx="0" cy="8" rx="12" ry="3" fill="none" stroke="#525A43" strokeWidth="1.5"/>
+                  <path d="M -10 8 L -8 -5 Q 0 -12 8 -5 L 10 8" fill="none" stroke="#525A43" strokeWidth="1.5"/>
+                  <line x1="-3" y1="-2" x2="3" y2="2" stroke="#525A43" strokeWidth="1.5"/>
                 </g>
                 
                 {/* Decorative leaves */}
@@ -145,10 +145,10 @@ export const Navbar: React.FC<NavbarProps> = ({
                 <button
                   key={item.id}
                   onClick={() => handleNavClick(item.id)}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-all relative flex flex-col items-center ${
+                  className={`px-3 py-2 rounded-lg text-sm font-semibold transition-all relative ${
                     isActive 
-                      ? 'bg-[#A1A696] text-[#2F3428] shadow-md font-extrabold' 
-                      : 'text-white hover:bg-[#3F4633] hover:text-[#A1A696]'
+                      ? 'bg-[#A1A696] text-[#2F3428] shadow-md' 
+                      : 'bg-[#3F4633] text-white hover:bg-[#A1A696] hover:text-[#2F3428] border border-[#A1A696]/20'
                   }`}
                 >
                   <span>{item.label}</span>
