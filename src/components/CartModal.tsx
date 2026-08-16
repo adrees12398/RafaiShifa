@@ -38,7 +38,7 @@ export const CartModal: React.FC<CartModalProps> = ({
   const [customerName, setCustomerName] = useState('');
   const [phone, setPhone] = useState('');
   const [address, setAddress] = useState('');
-  const [paymentMethod, setPaymentMethod] = useState<'Cash on Delivery' | 'Bank Transfer / JazzCash / EasyPaisa'>('Cash on Delivery');
+  const [paymentMethod, setPaymentMethod] = useState<'Cash on Delivery'>('Cash on Delivery');
   const [notes, setNotes] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
@@ -79,6 +79,15 @@ export const CartModal: React.FC<CartModalProps> = ({
       setCompletedOrder(order);
       onClearCart();
       setStep('success');
+      
+      // Show browser notification to admin (if supported)
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('🛍️ New Order Received!', {
+          body: `Order ${order.orderId} from ${order.customerName} - Rs. ${order.totalPrice}`,
+          icon: '/products/LiverBoost.jpeg',
+          tag: order.orderId
+        });
+      }
     } catch (err) {
       console.error('Order creation error:', err);
       setErrorMsg('Failed to submit order. Please check your connection and try again.');
@@ -291,42 +300,26 @@ export const CartModal: React.FC<CartModalProps> = ({
                 </h3>
 
                 <div className="space-y-2">
-                  <label className={`flex items-center justify-between p-3 rounded-xl border text-xs cursor-pointer transition-all ${
-                    paymentMethod === 'Cash on Delivery' 
-                      ? 'border-[#525A43] bg-[#525A43]/10 font-semibold text-[#2F3428]' 
-                      : 'border-stone-200 hover:bg-stone-50 text-[#2F3428]'
-                  }`}>
+                  <div className="flex items-center justify-between p-3 rounded-xl border border-[#525A43] bg-[#525A43]/10 font-semibold text-[#2F3428] text-xs">
                     <div className="flex items-center gap-2">
                       <input
                         type="radio"
                         name="payment"
-                        checked={paymentMethod === 'Cash on Delivery'}
-                        onChange={() => setPaymentMethod('Cash on Delivery')}
+                        checked={true}
+                        readOnly
                         className="text-[#525A43] focus:ring-[#A1A696]"
                       />
                       <span>Cash on Delivery (COD)</span>
                     </div>
                     <span className="text-[10px] bg-[#525A43] text-white px-2 py-0.5 rounded font-mono">
-                      RECOMMENDED
+                      ONLY METHOD
                     </span>
-                  </label>
+                  </div>
 
-                  <label className={`flex items-center justify-between p-3 rounded-xl border text-xs cursor-pointer transition-all ${
-                    paymentMethod === 'Bank Transfer / JazzCash / EasyPaisa' 
-                      ? 'border-[#525A43] bg-[#525A43]/10 font-semibold text-[#2F3428]' 
-                      : 'border-stone-200 hover:bg-stone-50 text-[#2F3428]'
-                  }`}>
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="radio"
-                        name="payment"
-                        checked={paymentMethod === 'Bank Transfer / JazzCash / EasyPaisa'}
-                        onChange={() => setPaymentMethod('Bank Transfer / JazzCash / EasyPaisa')}
-                        className="text-[#525A43] focus:ring-[#A1A696]"
-                      />
-                      <span>JazzCash / EasyPaisa / Bank Transfer</span>
-                    </div>
-                  </label>
+                  <div className="p-3 bg-[#A1A696]/10 border border-[#A1A696]/30 rounded-xl text-[11px] text-[#2F3428] flex items-center gap-2">
+                    <ShieldCheck className="w-4 h-4 text-[#525A43] shrink-0" />
+                    <span>Pay when you receive your order at your doorstep - safe and secure!</span>
+                  </div>
                 </div>
 
                 <div>

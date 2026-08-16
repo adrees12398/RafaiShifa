@@ -140,21 +140,21 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="lg:col-span-5 flex justify-center">
             <div className="relative w-full max-w-sm rounded-2xl sm:rounded-3xl overflow-hidden bg-[#3F4633] p-1 border border-[#A1A696]/40 shadow-2xl">
               <img 
-                src="https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=800&q=80" 
+                src={products.length > 0 ? products[0].imageUrl : '/products/LiverBoost.jpeg'} 
                 alt="RafaiShifa Herbal Remedies"
                 className="w-full aspect-4/3 object-cover rounded-xl sm:rounded-2xl shadow-md"
               />
               <div className="p-3 sm:p-4 bg-[#2F3428] rounded-xl sm:rounded-2xl mt-1 border border-[#A1A696]/30 flex items-center justify-between gap-2">
                 <div className="min-w-0">
                   <span className="text-[10px] sm:text-xs font-bold text-[#A1A696] block font-serif truncate">
-                    روغن کلونجی خالص
+                    {products.length > 0 ? products[0].urduName : 'یونانی دوا'}
                   </span>
                   <span className="text-[10px] sm:text-xs text-white font-medium truncate block">
-                    Pure Kalonji Oil (Nigella Sativa)
+                    {products.length > 0 ? products[0].name : 'Herbal Medicine'}
                   </span>
                 </div>
                 <button 
-                  onClick={() => onQuickView(products[0])}
+                  onClick={() => products.length > 0 && onQuickView(products[0])}
                   className="px-2 sm:px-3 py-1 sm:py-1.5 rounded-lg bg-[#A1A696] text-[#2F3428] text-[10px] sm:text-xs font-extrabold hover:bg-white shrink-0"
                 >
                   View Detail

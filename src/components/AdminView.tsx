@@ -68,8 +68,26 @@ export const AdminView: React.FC<AdminViewProps> = ({
   useEffect(() => {
     if (!isAdminLoggedIn) return;
 
+    // Request notification permission when admin logs in
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
     setLoadingOrders(true);
     const unsubscribe = subscribeOrders((liveOrders) => {
+      // Check for new orders and show notification
+      if (orders.length > 0 && liveOrders.length > orders.length) {
+        const newOrder = liveOrders[0];
+        if ('Notification' in window && Notification.permission === 'granted') {
+          new Notification('🛍️ New Order Alert!', {
+            body: `Order ${newOrder.orderId} from ${newOrder.customerName} - Rs. ${newOrder.totalPrice}`,
+            icon: '/products/LiverBoost.jpeg',
+            tag: newOrder.orderId,
+            requireInteraction: true
+          });
+        }
+      }
+      
       setOrders(liveOrders);
       setLoadingOrders(false);
     });
@@ -78,7 +96,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     fetchContactMessages().then(setMessages);
 
     return () => unsubscribe();
-  }, [isAdminLoggedIn]);
+  }, [isAdminLoggedIn, orders.length]);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -93,11 +111,51 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
   const handleStatusChange = async (orderId: string, newStatus: 'Pending' | 'Delivered' | 'Cancelled') => {
     await updateOrderStatusInDb(orderId, newStatus);
-    setOrders((prev) =>
-      prev.map((o) => (o.id === orderId || o.orderId === orderId ? { ...o, status: newStatus } : o))
+    
+    const updatedOrders = orders.map((o) => 
+      (o.id === orderId || o.orderId === orderId) ? { ...o, status: newStatus } : o
     );
+    setOrders(updatedOrders);
+    
     if (selectedOrder && (selectedOrder.id === orderId || selectedOrder.orderId === orderId)) {
       setSelectedOrder({ ...selectedOrder, status: newStatus });
+    }
+
+    // Show notification when order is cancelled or delivered
+    const order = orders.find(o => o.id === orderId || o.orderId === orderId);
+    if (order && newStatus === 'Cancelled') {
+      // In a real app, this would send SMS/WhatsApp to customer
+      // For now, we'll show browser notification
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('❌ Order Cancelled', {
+          body: `Order ${order.orderId} has been cancelled. Customer: ${order.customerName} (${order.phone})`,
+          icon: '/products/LiverBoost.jpeg',
+          tag: `cancel-${orderId}`
+        });
+      }
+      
+      // Store cancelled notification for customer (localStorage simulation)
+      try {
+        const customerNotifications = JSON.parse(localStorage.getItem('customer_notifications') || '[]');
+        customerNotifications.push({
+          orderId: order.orderId,
+          customerPhone: order.phone,
+          message: `Your order ${order.orderId} has been cancelled. For inquiries, contact us at 0300-4652599`,
+          timestamp: new Date().toISOString(),
+          status: newStatus
+        });
+        localStorage.setItem('customer_notifications', JSON.stringify(customerNotifications));
+      } catch (e) {
+        console.error('Failed to save customer notification:', e);
+      }
+    } else if (order && newStatus === 'Delivered') {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        new Notification('✅ Order Delivered', {
+          body: `Order ${order.orderId} marked as delivered to ${order.customerName}`,
+          icon: '/products/LiverBoost.jpeg',
+          tag: `delivered-${orderId}`
+        });
+      }
     }
   };
 
@@ -216,6 +274,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
             <h1 className="text-2xl font-extrabold font-serif">
               Live Admin Management Portal
             </h1>
+            {pendingCount > 0 && (
+              <span className="px-2 py-0.5 rounded-full bg-red-500 text-white text-xs font-bold animate-pulse">
+                {pendingCount} New
+              </span>
+            )}
           </div>
           <p className="text-xs text-stone-200 mt-1">
             Real-time synchronization active with Firebase Firestore (<code className="font-mono text-[#A1A696]">orders</code> collection).
