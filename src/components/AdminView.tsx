@@ -104,12 +104,12 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
-    if (passwordInput === 'admin123' || passwordInput === 'admin' || passwordInput === '123456') {
+    if (passwordInput === 'Admin123@') {
       setIsAdminLoggedIn(true);
       setLoginError('');
       setPasswordInput('');
     } else {
-      setLoginError('Invalid password. Default password is: admin123');
+      setLoginError('Invalid password. Please try again.');
     }
   };
 
@@ -295,7 +295,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 required
                 value={passwordInput}
                 onChange={(e) => setPasswordInput(e.target.value)}
-                placeholder="Enter passcode (Default: admin123)"
+                placeholder="Enter admin password"
                 className="w-full px-3 py-2.5 pl-9 rounded-xl border border-stone-300 text-xs text-[#2F3428] focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
               />
               <KeyRound className="w-4 h-4 text-stone-400 absolute left-3 top-3" />
@@ -310,10 +310,6 @@ export const AdminView: React.FC<AdminViewProps> = ({
             <span>Login to Admin Dashboard</span>
           </button>
         </form>
-
-        <div className="p-3 bg-[#F9F9F6] rounded-xl border border-[#A1A696]/30 text-[11px] text-[#2F3428] text-center">
-          Default Admin Password: <code className="font-mono font-bold text-[#525A43]">admin123</code>
-        </div>
       </div>
     );
   }
