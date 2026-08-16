@@ -352,7 +352,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
         
         <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex items-center gap-4">
           <div className="w-12 h-12 rounded-xl bg-[#A1A696]/20 text-[#525A43] flex items-center justify-center font-bold shrink-0">
-            <DollarSign className="w-6 h-6" />
+            <span className="text-2xl font-black">₹</span>
           </div>
           <div>
             <span className="text-xs text-stone-500 font-medium">Total Orders Revenue</span>

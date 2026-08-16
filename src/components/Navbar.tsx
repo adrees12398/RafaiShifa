@@ -6,7 +6,6 @@ import {
   X, 
   ShieldCheck, 
   PhoneCall, 
-  Search, 
   UserCheck 
 } from 'lucide-react';
 
@@ -32,7 +31,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   setSearchQuery
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [showSearchInput, setShowSearchInput] = useState(false);
 
   const navItems: { id: NavTab; label: string; urdu: string }[] = [
     { id: 'home', label: 'Home', urdu: 'صفحہ اول' },
@@ -117,26 +115,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </div>
           </div>
 
-          {/* Search Bar - Desktop */}
-          <div className="hidden lg:flex items-center flex-1 max-w-xs mx-8 relative">
-            <input 
-              type="text" 
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search Kalonji, Majoon, Oil..."
-              className="w-full bg-[#3F4633] border border-[#A1A696]/40 rounded-lg py-2 pl-9 pr-4 text-sm text-white placeholder-[#A1A696]/80 focus:outline-none focus:ring-2 focus:ring-[#A1A696] transition-all"
-            />
-            <Search className="w-4 h-4 text-[#A1A696] absolute left-3 top-2.5" />
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery('')}
-                className="absolute right-2.5 top-2.5 text-xs text-[#A1A696] hover:text-white"
-              >
-                <X className="w-4 h-4" />
-              </button>
-            )}
-          </div>
-
           {/* Navigation Links - Desktop */}
           <nav className="hidden md:flex items-center gap-1 lg:gap-2">
             {navItems.map((item) => {
@@ -162,15 +140,6 @@ export const Navbar: React.FC<NavbarProps> = ({
 
           {/* Right Action Icons */}
           <div className="flex items-center gap-1.5 sm:gap-3">
-            
-            {/* Search Trigger for Mobile */}
-            <button
-              onClick={() => setShowSearchInput(!showSearchInput)}
-              className="p-2 rounded-lg text-[#A1A696] hover:text-white hover:bg-[#3F4633] lg:hidden"
-              aria-label="Toggle Search"
-            >
-              <Search className="w-4 h-4 sm:w-5 sm:h-5" />
-            </button>
 
             {/* Admin Key Button if not on admin tab */}
             {activeTab !== 'admin' && (
@@ -217,22 +186,6 @@ export const Navbar: React.FC<NavbarProps> = ({
             </button>
           </div>
         </div>
-
-        {/* Mobile Search Bar Dropdown */}
-        {showSearchInput && (
-          <div className="lg:hidden pb-3 pt-1">
-            <div className="relative">
-              <input 
-                type="text" 
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search herbal medicines, oils..."
-                className="w-full bg-[#3F4633] border border-[#A1A696]/40 rounded-lg py-2.5 pl-9 pr-4 text-sm text-white placeholder-[#A1A696] focus:outline-none focus:ring-2 focus:ring-[#A1A696]"
-              />
-              <Search className="w-4 h-4 text-[#A1A696] absolute left-3 top-3" />
-            </div>
-          </div>
-        )}
       </div>
 
       {/* Mobile Navigation Drawer */}
