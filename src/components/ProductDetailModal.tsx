@@ -28,6 +28,21 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   if (!product) return null;
 
+  // Get image from localStorage if it's a local path
+  const getImageSrc = (imageUrl: string) => {
+    if (imageUrl.startsWith('/products/')) {
+      try {
+        const productImages = JSON.parse(localStorage.getItem('product_images') || '{}');
+        return productImages[imageUrl] || imageUrl;
+      } catch {
+        return imageUrl;
+      }
+    }
+    return imageUrl;
+  };
+
+  const imageSrc = getImageSrc(product.imageUrl);
+
   const handleAdd = () => {
     onAddToCart(product, quantity);
     setAdded(true);
@@ -52,9 +67,12 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
           <div className="bg-[#F9F9F6] p-4 sm:p-6 flex flex-col justify-between relative min-h-[250px] sm:min-h-[300px]">
             <div className="relative rounded-xl sm:rounded-2xl overflow-hidden shadow-md my-auto aspect-square">
               <img 
-                src={product.imageUrl} 
+                src={imageSrc} 
                 alt={product.name}
                 className="w-full h-full object-cover"
+                onError={(e) => {
+                  e.currentTarget.src = '/products/LiverBoost.jpeg';
+                }}
               />
             </div>
 

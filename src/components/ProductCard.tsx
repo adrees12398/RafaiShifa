@@ -15,6 +15,22 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onQuickView,
   isInCart = false
 }) => {
+  // Get image from localStorage if it's a local path
+  const getImageSrc = (imageUrl: string) => {
+    // If it's a local path starting with /products/
+    if (imageUrl.startsWith('/products/')) {
+      try {
+        const productImages = JSON.parse(localStorage.getItem('product_images') || '{}');
+        return productImages[imageUrl] || imageUrl;
+      } catch {
+        return imageUrl;
+      }
+    }
+    return imageUrl;
+  };
+
+  const imageSrc = getImageSrc(product.imageUrl);
+
   return (
     <div className="group bg-white rounded-2xl overflow-hidden border border-[#A1A696]/30 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full relative">
       
@@ -33,10 +49,14 @@ export const ProductCard: React.FC<ProductCardProps> = ({
       {/* Image Section */}
       <div className="relative aspect-4/3 bg-stone-100 overflow-hidden cursor-pointer" onClick={() => onQuickView(product)}>
         <img 
-          src={product.imageUrl} 
+          src={imageSrc} 
           alt={product.name}
           className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
           loading="lazy"
+          onError={(e) => {
+            // Fallback to default image if loading fails
+            e.currentTarget.src = '/products/LiverBoost.jpeg';
+          }}
         />
         <div className="absolute inset-0 bg-[#2F3428]/20 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
           <button 

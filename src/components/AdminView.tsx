@@ -591,25 +591,47 @@ export const AdminView: React.FC<AdminViewProps> = ({
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {products.map((p) => (
-              <div key={p.id} className="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex items-center gap-3 relative group">
-                <img src={p.imageUrl} alt={p.name} className="w-16 h-16 rounded-xl object-cover bg-white shrink-0" />
-                <div className="flex-1 min-w-0">
-                  <h4 className="font-bold text-[#2F3428] text-xs truncate">{p.name}</h4>
-                  <p className="text-[11px] text-[#525A43] font-serif">{p.urduName}</p>
-                  <div className="text-xs font-black text-[#525A43] mt-1">Rs. {p.price}</div>
+            {products.map((p) => {
+              // Get image from localStorage if it's a local path
+              const getImageSrc = (imageUrl: string) => {
+                if (imageUrl.startsWith('/products/')) {
+                  try {
+                    const productImages = JSON.parse(localStorage.getItem('product_images') || '{}');
+                    return productImages[imageUrl] || imageUrl;
+                  } catch {
+                    return imageUrl;
+                  }
+                }
+                return imageUrl;
+              };
+
+              return (
+                <div key={p.id} className="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex items-center gap-3 relative group">
+                  <img 
+                    src={getImageSrc(p.imageUrl)} 
+                    alt={p.name} 
+                    className="w-16 h-16 rounded-xl object-cover bg-white shrink-0"
+                    onError={(e) => {
+                      e.currentTarget.src = '/products/LiverBoost.jpeg';
+                    }}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <h4 className="font-bold text-[#2F3428] text-xs truncate">{p.name}</h4>
+                    <p className="text-[11px] text-[#525A43] font-serif">{p.urduName}</p>
+                    <div className="text-xs font-black text-[#525A43] mt-1">Rs. {p.price}</div>
+                  </div>
+                  
+                  {/* Delete Button */}
+                  <button
+                    onClick={() => handleDeleteProduct(p.id)}
+                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                    title="Delete Product"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </button>
                 </div>
-                
-                {/* Delete Button */}
-                <button
-                  onClick={() => handleDeleteProduct(p.id)}
-                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                  title="Delete Product"
-                >
-                  <Trash2 className="w-4 h-4" />
-                </button>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}
