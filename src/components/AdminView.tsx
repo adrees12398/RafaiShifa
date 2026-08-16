@@ -63,6 +63,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
   const [newProdCategory, setNewProdCategory] = useState('Tib-e-Nabvi Special');
   const [newProdDesc, setNewProdDesc] = useState('');
   const [newProdDosage, setNewProdDosage] = useState('1 teaspoon twice daily');
+  const [newProdImageUrl, setNewProdImageUrl] = useState('');
 
   // Real-time Firestore listener for live orders
   useEffect(() => {
@@ -174,7 +175,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
       fullDescription: newProdDesc.trim() || 'Prepared according to authentic Unani Tib standards.',
       dosage: newProdDosage.trim() || 'As directed by Hakeem.',
       ingredients: ['100% Organic Botanical Extracts'],
-      imageUrl: 'https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?auto=format&fit=crop&w=800&q=80',
+      imageUrl: newProdImageUrl.trim() || '/products/LiverBoost.jpeg',
       rating: 5.0,
       reviewsCount: 1,
       isFeatured: true,
@@ -191,6 +192,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdUrdu('');
     setNewProdPrice(500);
     setNewProdDesc('');
+    setNewProdImageUrl('');
   };
 
   // Metrics Calculations
@@ -713,11 +715,26 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
 
               <div>
+                <label className="block font-bold text-[#2F3428] mb-1">Product Image URL</label>
+                <input
+                  type="text"
+                  value={newProdImageUrl}
+                  onChange={(e) => setNewProdImageUrl(e.target.value)}
+                  placeholder="e.g. /products/product-name.jpeg or full URL"
+                  className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                />
+                <p className="text-[10px] text-stone-500 mt-1">
+                  Use local path like <code className="bg-stone-100 px-1 rounded">/products/image.jpeg</code> or leave empty for default
+                </p>
+              </div>
+
+              <div>
                 <label className="block font-bold text-[#2F3428] mb-1">Short Description</label>
                 <textarea
                   rows={2}
                   value={newProdDesc}
                   onChange={(e) => setNewProdDesc(e.target.value)}
+                  placeholder="Brief product description..."
                   className="w-full p-2 border border-stone-300 rounded-lg text-xs"
                 />
               </div>

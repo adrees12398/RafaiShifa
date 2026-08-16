@@ -14,7 +14,8 @@ import {
   MapPin, 
   User, 
   CreditCard, 
-  ArrowRight 
+  ArrowRight,
+  RefreshCw 
 } from 'lucide-react';
 
 interface CartModalProps {
@@ -76,6 +77,10 @@ export const CartModal: React.FC<CartModalProps> = ({
       };
 
       const order = await createOrder(orderPayload);
+      
+      // Reset submitting state immediately after success
+      setIsSubmitting(false);
+      
       setCompletedOrder(order);
       onClearCart();
       setStep('success');
@@ -91,7 +96,6 @@ export const CartModal: React.FC<CartModalProps> = ({
     } catch (err) {
       console.error('Order creation error:', err);
       setErrorMsg('Failed to submit order. Please check your connection and try again.');
-    } finally {
       setIsSubmitting(false);
     }
   };
@@ -341,56 +345,83 @@ export const CartModal: React.FC<CartModalProps> = ({
 
           {/* STEP 3: SUCCESS CONFIRMATION */}
           {step === 'success' && completedOrder && (
-            <div className="text-center py-6 space-y-4">
-              <div className="w-16 h-16 mx-auto rounded-full bg-[#A1A696]/20 text-[#525A43] flex items-center justify-center">
-                <CheckCircle className="w-10 h-10" />
+            <div className="text-center py-6 space-y-5">
+              {/* Success Animation */}
+              <div className="relative">
+                <div className="w-20 h-20 mx-auto rounded-full bg-gradient-to-br from-[#A1A696] to-[#525A43] text-white flex items-center justify-center shadow-2xl animate-bounce">
+                  <CheckCircle className="w-12 h-12" />
+                </div>
+                {/* Confetti effect */}
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                  <div className="text-4xl animate-ping opacity-30">🎉</div>
+                </div>
               </div>
 
-              <div>
-                <span className="text-xs font-bold text-[#525A43] uppercase tracking-widest bg-[#A1A696]/20 px-3 py-1 rounded-full border border-[#A1A696]/40">
-                  JazakAllah Khair!
-                </span>
-                <h3 className="text-xl font-extrabold text-[#2F3428] mt-2">
-                  Order Successfully Placed
+              {/* Success Message */}
+              <div className="space-y-3">
+                <div className="inline-block">
+                  <span className="text-xs font-bold text-white uppercase tracking-widest bg-[#525A43] px-4 py-2 rounded-full border-2 border-[#A1A696] shadow-lg">
+                    ✅ Order Confirmed!
+                  </span>
+                </div>
+                
+                <h3 className="text-2xl font-extrabold text-[#2F3428] font-serif">
+                  JazakAllah Khair! 🤲
                 </h3>
-                <p className="text-xs text-stone-600 mt-1">
-                  Your order has been recorded in our system. Our team will contact you shortly to confirm dispatch.
+                
+                <p className="text-sm text-stone-600 max-w-md mx-auto leading-relaxed">
+                  Your order has been successfully placed. Our team will contact you shortly on <strong className="text-[#525A43]">{completedOrder.phone}</strong> to confirm delivery details.
                 </p>
               </div>
 
               {/* Order Summary Box */}
-              <div className="bg-white p-4 rounded-2xl border border-[#A1A696]/30 text-left text-xs space-y-2.5 shadow-sm">
-                <div className="flex justify-between items-center border-b pb-2">
-                  <span className="text-stone-500">Order ID:</span>
-                  <span className="font-mono font-bold text-[#525A43] bg-[#A1A696]/20 px-2 py-0.5 rounded">
+              <div className="bg-gradient-to-br from-white to-[#F9F9F6] p-5 rounded-2xl border-2 border-[#A1A696]/40 text-left text-xs space-y-3 shadow-xl">
+                <div className="flex justify-between items-center pb-3 border-b-2 border-[#A1A696]/20">
+                  <span className="text-stone-500 font-semibold">Order ID:</span>
+                  <span className="font-mono font-extrabold text-[#525A43] bg-[#A1A696]/20 px-3 py-1 rounded-lg text-sm">
                     {completedOrder.orderId}
                   </span>
                 </div>
+                
                 <div className="flex justify-between items-center">
                   <span className="text-stone-500">Customer Name:</span>
-                  <span className="font-semibold text-[#2F3428]">{completedOrder.customerName}</span>
+                  <span className="font-bold text-[#2F3428]">{completedOrder.customerName}</span>
                 </div>
+                
                 <div className="flex justify-between items-center">
                   <span className="text-stone-500">Phone:</span>
-                  <span className="font-semibold text-[#2F3428]">{completedOrder.phone}</span>
+                  <span className="font-semibold text-[#2F3428] font-mono">{completedOrder.phone}</span>
                 </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-stone-500">Total Amount:</span>
-                  <span className="font-bold text-[#525A43] text-sm">Rs. {completedOrder.totalPrice}</span>
+                
+                <div className="flex justify-between items-center pt-3 border-t-2 border-[#A1A696]/20">
+                  <span className="text-stone-600 font-semibold">Total Amount:</span>
+                  <span className="font-extrabold text-[#525A43] text-lg">Rs. {completedOrder.totalPrice}</span>
                 </div>
+                
                 <div className="flex justify-between items-center">
                   <span className="text-stone-500">Status:</span>
-                  <span className="px-2.5 py-0.5 rounded-full text-[11px] font-bold bg-[#A1A696]/20 text-[#525A43]">
+                  <span className="px-3 py-1 rounded-full text-xs font-extrabold bg-[#525A43] text-white border border-[#A1A696]">
                     {completedOrder.status}
                   </span>
                 </div>
               </div>
 
-              <div className="p-3 bg-white border border-[#A1A696]/30 rounded-xl text-[11px] text-[#2F3428] flex items-center gap-2 text-left">
-                <ShieldCheck className="w-5 h-5 text-[#525A43] shrink-0" />
-                <span>
-                  Our representative will reach out at <b>{completedOrder.phone}</b> to verify delivery details.
-                </span>
+              {/* Info Alert */}
+              <div className="p-4 bg-white border-2 border-[#A1A696]/40 rounded-xl text-xs text-[#2F3428] flex items-start gap-3 text-left shadow-sm">
+                <ShieldCheck className="w-6 h-6 text-[#525A43] shrink-0 mt-0.5" />
+                <div className="space-y-1">
+                  <p className="font-bold text-[#525A43]">What happens next?</p>
+                  <p className="text-stone-700 leading-relaxed">
+                    Our representative will call you at <strong>{completedOrder.phone}</strong> within 24 hours to confirm your order and delivery address. Your medicine will be delivered via Cash on Delivery.
+                  </p>
+                </div>
+              </div>
+
+              {/* Celebration Message */}
+              <div className="pt-2">
+                <p className="text-xs text-[#525A43] font-medium italic">
+                  Thank you for choosing RafaiShifa - Natural Healing, Traditional Care 🌿
+                </p>
               </div>
             </div>
           )}
@@ -441,10 +472,17 @@ export const CartModal: React.FC<CartModalProps> = ({
                 type="submit"
                 form="checkout-form"
                 disabled={isSubmitting}
-                className="flex-1 py-3.5 px-6 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg transition-all disabled:opacity-50"
+                className={`flex-1 py-3.5 px-6 rounded-xl font-extrabold text-sm flex items-center justify-center gap-2 shadow-lg transition-all ${
+                  isSubmitting 
+                    ? 'bg-stone-400 cursor-not-allowed' 
+                    : 'bg-[#525A43] hover:bg-[#3F4633] active:scale-95'
+                } text-white`}
               >
                 {isSubmitting ? (
-                  <span>Saving Order...</span>
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    <span>Processing Order...</span>
+                  </>
                 ) : (
                   <>
                     <CheckCircle className="w-4 h-4" />
