@@ -23,7 +23,10 @@ import {
   Plus, 
   Package, 
   LogOut, 
-  ShieldCheck 
+  ShieldCheck,
+  Trash2,
+  Image as ImageIcon,
+  Upload
 } from 'lucide-react';
 
 interface AdminViewProps {
@@ -193,6 +196,56 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdPrice(500);
     setNewProdDesc('');
     setNewProdImageUrl('');
+  };
+
+  const handleDeleteProduct = (productId: string) => {
+    if (!confirm('Are you sure you want to delete this product?')) return;
+    
+    const updated = products.filter(p => p.id !== productId);
+    setProducts(updated);
+    saveStoredProducts(updated);
+  };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Create a local URL for preview and use
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const imageData = event.target?.result as string;
+      
+      // Generate filename from product name or timestamp
+      const fileName = newProdName.trim() 
+        ? newProdName.trim().toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '') 
+        : `product-${Date.now()}`;
+      
+      const extension = file.name.split('.').pop() || 'jpeg';
+      const imagePath = `/products/${fileName}.${extension}`;
+      
+      // Set the image URL in the form
+      setNewProdImageUrl(imagePath);
+      
+      // Store the image data in localStorage for demo (in production, upload to server)
+      try {
+        const productImages = JSON.parse(localStorage.getItem('product_images') || '{}');
+        productImages[imagePath] = imageData;
+        localStorage.setItem('product_images', JSON.stringify(productImages));
+        
+        alert(`Image ready! It will be saved as ${imagePath}\n\nNote: In production, this would upload to your server.`);
+      } catch (e) {
+        console.error('Failed to store image:', e);
+        // Still set the image URL so form can be submitted
+      }
+    };
+    
+    reader.readAsDataURL(file);
   };
 
   // Metrics Calculations
@@ -539,13 +592,22 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {products.map((p) => (
-              <div key={p.id} className="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex items-center gap-3">
+              <div key={p.id} className="bg-stone-50 p-4 rounded-2xl border border-stone-200 flex items-center gap-3 relative group">
                 <img src={p.imageUrl} alt={p.name} className="w-16 h-16 rounded-xl object-cover bg-white shrink-0" />
                 <div className="flex-1 min-w-0">
                   <h4 className="font-bold text-[#2F3428] text-xs truncate">{p.name}</h4>
                   <p className="text-[11px] text-[#525A43] font-serif">{p.urduName}</p>
                   <div className="text-xs font-black text-[#525A43] mt-1">Rs. {p.price}</div>
                 </div>
+                
+                {/* Delete Button */}
+                <button
+                  onClick={() => handleDeleteProduct(p.id)}
+                  className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
+                  title="Delete Product"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
               </div>
             ))}
           </div>
@@ -715,16 +777,45 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </div>
 
               <div>
-                <label className="block font-bold text-[#2F3428] mb-1">Product Image URL</label>
-                <input
-                  type="text"
-                  value={newProdImageUrl}
-                  onChange={(e) => setNewProdImageUrl(e.target.value)}
-                  placeholder="e.g. /products/product-name.jpeg or full URL"
-                  className="w-full p-2 border border-stone-300 rounded-lg text-xs"
-                />
+                <label className="block font-bold text-[#2F3428] mb-1">Product Image</label>
+                
+                {/* File Upload Button */}
+                <div className="flex items-center gap-2">
+                  <label className="flex-1 px-3 py-2 border-2 border-dashed border-[#525A43] rounded-lg hover:bg-stone-50 cursor-pointer transition-colors flex items-center justify-center gap-2 text-xs font-semibold text-[#525A43]">
+                    <Upload className="w-4 h-4" />
+                    <span>Upload from PC</span>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      className="hidden"
+                    />
+                  </label>
+                </div>
+
+                {/* Manual URL Input */}
+                <div className="mt-2">
+                  <input
+                    type="text"
+                    value={newProdImageUrl}
+                    onChange={(e) => setNewProdImageUrl(e.target.value)}
+                    placeholder="Or paste image URL: /products/product-name.jpeg"
+                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
+                  />
+                </div>
+                
+                {/* Preview */}
+                {newProdImageUrl && (
+                  <div className="mt-2 flex items-center gap-2 p-2 bg-[#A1A696]/10 rounded-lg">
+                    <ImageIcon className="w-4 h-4 text-[#525A43]" />
+                    <span className="text-[10px] text-[#525A43] font-mono truncate">
+                      {newProdImageUrl}
+                    </span>
+                  </div>
+                )}
+                
                 <p className="text-[10px] text-stone-500 mt-1">
-                  Use local path like <code className="bg-stone-100 px-1 rounded">/products/image.jpeg</code> or leave empty for default
+                  Upload image from your PC or use URL like <code className="bg-stone-100 px-1 rounded">/products/image.jpeg</code>
                 </p>
               </div>
 
