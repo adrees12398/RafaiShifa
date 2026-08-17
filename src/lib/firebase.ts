@@ -107,6 +107,8 @@ export function subscribeOrders(onUpdate: (orders: Order[]) => void): () => void
     unsubscribe = onSnapshot(
       q,
       (snapshot) => {
+        console.log('✅ Firestore: Received', snapshot.size, 'orders');
+        
         const firestoreOrders: Order[] = snapshot.docs.map((d) => {
           const data = d.data();
           return {
@@ -137,15 +139,17 @@ export function subscribeOrders(onUpdate: (orders: Order[]) => void): () => void
           (a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
         );
 
+        console.log('📊 Total orders (merged):', mergedList.length);
         onUpdate(mergedList);
       },
       (error) => {
-        console.warn('Firestore snapshot error, reading local fallback:', error);
+        console.error('❌ Firestore snapshot error:', error);
+        console.warn('Reading local fallback...');
         onUpdate(getLocalOrders());
       }
     );
   } catch (e) {
-    console.warn('Firestore connection fallback:', e);
+    console.error('❌ Firestore connection error:', e);
     onUpdate(getLocalOrders());
   }
 

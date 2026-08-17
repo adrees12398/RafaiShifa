@@ -78,9 +78,13 @@ export const AdminView: React.FC<AdminViewProps> = ({
     }
 
     setLoadingOrders(true);
+    
+    // Track previous orders count for notification
+    let previousOrdersCount = 0;
+
     const unsubscribe = subscribeOrders((liveOrders) => {
       // Check for new orders and show notification
-      if (orders.length > 0 && liveOrders.length > orders.length) {
+      if (previousOrdersCount > 0 && liveOrders.length > previousOrdersCount) {
         const newOrder = liveOrders[0];
         if ('Notification' in window && Notification.permission === 'granted') {
           new Notification('🛍️ New Order Alert!', {
@@ -92,6 +96,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
         }
       }
       
+      previousOrdersCount = liveOrders.length;
       setOrders(liveOrders);
       setLoadingOrders(false);
     });
@@ -100,7 +105,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     fetchContactMessages().then(setMessages);
 
     return () => unsubscribe();
-  }, [isAdminLoggedIn, orders.length]);
+  }, [isAdminLoggedIn]); // Removed orders.length dependency to prevent listener re-connection
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
