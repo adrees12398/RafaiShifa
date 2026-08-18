@@ -268,7 +268,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
         <div className="flex flex-col lg:flex-row items-center gap-4 sm:gap-6 lg:gap-8">
           <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border-2 border-[#A1A696] shrink-0 shadow-md">
             <img 
-              src="https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=400&q=80" 
+              src="/products/hakeem-mohsin-ali.jpg" 
               alt="Dr. Hakeem Hafiz Mohsin Ali"
               className="w-full h-full object-cover object-top"
             />

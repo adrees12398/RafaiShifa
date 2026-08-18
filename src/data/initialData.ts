@@ -206,7 +206,7 @@ export const INITIAL_TEAM: TeamMember[] = [
       'Unani & Homeopathic Medicine'
     ],
     bio: 'Dr. Hakeem Hafiz Mohsin Ali is a highly experienced Unani and Homeopathic Physician with over 25 years of clinical practice. He holds DHMS and DUMS qualifications, is a Fazil-e-Tibb, a Gold Medalist, and has served as a National Councillor, Islamabad.\n\nWith a strong commitment to authentic Unani and Homeopathic medicine, he has dedicated his career to providing safe, natural, and evidence-based healthcare. His mission through Rafai Shifa is to combine traditional wisdom with modern healthcare practices, helping patients achieve long-term wellness through trusted herbal and natural treatments.',
-    imageUrl: 'https://images.unsplash.com/photo-1622253692010-333f2da6031d?auto=format&fit=crop&w=800&q=80',
+    imageUrl: '/products/hakeem-mohsin-ali.jpg',
     isHeadPhysician: true
   },
   {
@@ -227,7 +227,7 @@ export const INITIAL_TEAM: TeamMember[] = [
       'Clinical Herbal Safety'
     ],
     bio: 'Oversees rigorous quality control at RafaiShifa. Ensures every herb and compound passes heavy metal tests, purity verifications, and cold-extraction standard protocols.',
-    imageUrl: 'https://images.unsplash.com/photo-1594824813566-78a933722055?auto=format&fit=crop&w=600&q=80'
+    imageUrl: ''
   },
   {
     id: 'team-3',
@@ -246,7 +246,7 @@ export const INITIAL_TEAM: TeamMember[] = [
       'Respiratory & Chest Care'
     ],
     bio: 'Specializes in pain management, arthritis therapies, and herbal oil extractions. Passionate about spreading authentic Tib-e-Nabvi knowledge to global households.',
-    imageUrl: 'https://images.unsplash.com/photo-1537368910025-700350fe46c7?auto=format&fit=crop&w=600&q=80'
+    imageUrl: ''
   }
 ];
 
