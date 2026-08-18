@@ -183,6 +183,19 @@ export function subscribeOrders(onUpdate: (orders: Order[]) => void): () => void
   return unsubscribe;
 }
 
+// Quick connection check to surface Firestore status in the admin dashboard
+export async function checkFirestoreConnection(): Promise<{ ok: boolean; message: string }> {
+  try {
+    const ordersRef = collection(db, 'orders');
+    await withTimeout(getDocs(ordersRef), 10000);
+    return { ok: true, message: 'Connected to Firestore' };
+  } catch (err) {
+    const msg = err instanceof Error ? err.message : String(err);
+    const code = (err as { code?: string })?.code;
+    return { ok: false, message: code ? `${code} - ${msg}` : msg };
+  }
+}
+
 // Update Order Status in Firestore & Local storage
 export async function updateOrderStatusInDb(
   orderDocIdOrOrderId: string,

@@ -4,7 +4,8 @@ import {
   subscribeOrders, 
   updateOrderStatusInDb, 
   fetchContactMessages, 
-  saveStoredProducts 
+  saveStoredProducts,
+  checkFirestoreConnection
 } from '../lib/firebase';
 import { 
   Lock, 
@@ -58,6 +59,16 @@ export const AdminView: React.FC<AdminViewProps> = ({
   // Messages State
   const [messages, setMessages] = useState<ContactMessage[]>([]);
 
+  // Firestore connection status
+  const [fsStatus, setFsStatus] = useState<{ ok: boolean; message: string } | null>(null);
+  const [checkingFs, setCheckingFs] = useState(false);
+
+  const runConnectionCheck = async (showLoading = false) => {
+    if (showLoading) setCheckingFs(true);
+    setFsStatus(await checkFirestoreConnection());
+    if (showLoading) setCheckingFs(false);
+  };
+
   // New Product Modal State
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [newProdName, setNewProdName] = useState('');
@@ -78,6 +89,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
     }
 
     setLoadingOrders(true);
+
+    runConnectionCheck();
     
     // Track previous orders count for notification
     let previousOrdersCount = 0;
@@ -342,6 +355,35 @@ export const AdminView: React.FC<AdminViewProps> = ({
         </div>
 
         <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2">
+            {checkingFs ? (
+              <span className="px-3 py-2 rounded-xl bg-[#3F4633] text-white border border-[#A1A696]/40 text-xs font-bold flex items-center gap-2">
+                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                Checking...
+              </span>
+            ) : fsStatus ? (
+              <button
+                onClick={() => runConnectionCheck(true)}
+                title="Check Firestore connection again"
+                className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-2 transition-colors ${
+                  fsStatus.ok
+                    ? 'bg-[#A1A696]/20 text-[#A1A696] border-[#A1A696]/40 hover:bg-[#A1A696]/30'
+                    : 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200'
+                }`}
+              >
+                <span className={`w-1.5 h-1.5 rounded-full ${fsStatus.ok ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse`}></span>
+                {fsStatus.ok ? 'Firestore Connected' : 'Firestore Error'}
+              </button>
+            ) : (
+              <button
+                onClick={() => runConnectionCheck(true)}
+                className="px-3 py-2 rounded-xl bg-[#3F4633] hover:bg-[#2F3428] text-white border border-[#A1A696]/40 text-xs font-bold flex items-center gap-2 transition-colors"
+              >
+                <RefreshCw className={`w-3.5 h-3.5 ${checkingFs ? 'animate-spin' : ''}`} />
+                Check Firestore
+              </button>
+            )}
+          </div>
           <button
             onClick={() => setIsAdminLoggedIn(false)}
             className="px-4 py-2 rounded-xl bg-[#3F4633] hover:bg-[#2F3428] text-white border border-[#A1A696]/40 text-xs font-bold flex items-center gap-2 transition-colors"
@@ -351,6 +393,22 @@ export const AdminView: React.FC<AdminViewProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Firestore error banner */}
+      {fsStatus && !fsStatus.ok && (
+        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl text-xs space-y-1.5 shadow-sm">
+          <div className="flex items-start gap-2">
+            <XCircle className="w-4 h-4 shrink-0 mt-0.5" />
+            <div>
+              <p className="font-bold">Firestore connection failed</p>
+              <p className="font-mono break-all">{fsStatus.message}</p>
+              <p className="mt-1 text-red-700">
+                Is dauran orders localStorage me save hote hain lekin Firestore sync nahi hota. Firebase Console &gt; Firestore Database &gt; Rules me read/write allow karein aur dobara check karein.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Analytics Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
