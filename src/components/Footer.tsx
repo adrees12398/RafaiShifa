@@ -15,7 +15,7 @@ interface FooterProps {
 
 export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
   return (
-    <footer className="bg-[#525A43] text-stone-100 pt-12 sm:pt-16 pb-6 sm:pb-8 border-t-4 border-[#A1A696]">
+    <footer className="safe-bottom bg-[#525A43] text-stone-100 pt-12 sm:pt-16 pb-6 sm:pb-8 border-t-4 border-[#A1A696]">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         
         {/* Value Proposition Grid */}

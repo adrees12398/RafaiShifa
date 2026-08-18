@@ -47,7 +47,7 @@ export const Navbar: React.FC<NavbarProps> = ({
   };
 
   return (
-    <header className="sticky top-0 z-40 bg-[#525A43] shadow-md border-b border-[#A1A696]/30">
+    <header className="safe-top sticky top-0 z-40 bg-[#525A43] shadow-md border-b border-[#A1A696]/30">
       {/* Top Announcement Bar */}
       <div className="bg-[#3F4633] text-white text-xs py-1.5 px-4 border-b border-[#525A43]">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-1 text-center sm:text-left">

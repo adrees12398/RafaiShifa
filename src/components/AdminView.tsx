@@ -364,7 +364,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
             ) : fsStatus ? (
               <button
                 onClick={() => runConnectionCheck(true)}
-                title="Check Firestore connection again"
+                title={fsStatus.ok ? 'Firestore Connected' : `Firestore Error: ${fsStatus.message}`}
                 className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-2 transition-colors ${
                   fsStatus.ok
                     ? 'bg-[#A1A696]/20 text-[#A1A696] border-[#A1A696]/40 hover:bg-[#A1A696]/30'
@@ -393,22 +393,6 @@ export const AdminView: React.FC<AdminViewProps> = ({
           </button>
         </div>
       </div>
-
-      {/* Firestore error banner */}
-      {fsStatus && !fsStatus.ok && (
-        <div className="bg-red-50 border border-red-200 text-red-800 p-4 rounded-2xl text-xs space-y-1.5 shadow-sm">
-          <div className="flex items-start gap-2">
-            <XCircle className="w-4 h-4 shrink-0 mt-0.5" />
-            <div>
-              <p className="font-bold">Firestore connection failed</p>
-              <p className="font-mono break-all">{fsStatus.message}</p>
-              <p className="mt-1 text-red-700">
-                Is dauran orders localStorage me save hote hain lekin Firestore sync nahi hota. Firebase Console &gt; Firestore Database &gt; Rules me read/write allow karein aur dobara check karein.
-              </p>
-            </div>
-          </div>
-        </div>
-      )}
 
       {/* Analytics Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
