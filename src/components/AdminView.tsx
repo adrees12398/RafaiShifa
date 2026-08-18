@@ -396,17 +396,20 @@ export const AdminView: React.FC<AdminViewProps> = ({
         </div>
       </div>
 
-      {/* Firestore error banner (dismissible) */}
+      {/* Firestore error banner (dismissible, compact) */}
       {fsStatus && !fsStatus.ok && !fsErrorDismissed && (
-        <div className="relative bg-red-50 border border-red-200 text-red-800 p-3.5 pr-10 rounded-2xl text-xs space-y-1 shadow-sm">
-          <span className="font-bold">Firestore connection failed</span>
-          <p className="font-mono break-all">{fsStatus.message}</p>
+        <div className="flex items-center justify-between gap-3 bg-red-50 border border-red-200 text-red-800 pl-3.5 pr-2 py-2 rounded-xl text-[11px] shadow-sm">
+          <div className="flex items-center gap-2 min-w-0">
+            <XCircle className="w-3.5 h-3.5 shrink-0" />
+            <span className="font-bold shrink-0">Firestore Error</span>
+            <span className="font-mono truncate hidden sm:inline">{fsStatus.message}</span>
+          </div>
           <button
             onClick={() => setFsErrorDismissed(true)}
             aria-label="Close"
-            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 flex items-center justify-center transition-colors"
+            className="w-5 h-5 rounded-full bg-red-100 text-red-600 hover:bg-red-200 flex items-center justify-center shrink-0 transition-colors"
           >
-            <X className="w-3.5 h-3.5" />
+            <X className="w-3 h-3" />
           </button>
         </div>
       )}
