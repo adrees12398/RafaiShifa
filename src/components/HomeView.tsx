@@ -266,11 +266,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* Lead Physician Banner: Dr. Hakeem Hafiz Mohsin Ali */}
       <section className="bg-[#525A43] rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 text-white border border-[#A1A696]/40 shadow-xl relative overflow-hidden">
         <div className="flex flex-col lg:flex-row items-center gap-4 sm:gap-6 lg:gap-8">
-          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border-2 border-[#A1A696] shrink-0 shadow-md">
+          <div className="w-24 h-24 sm:w-28 sm:h-28 md:w-32 md:h-32 rounded-2xl overflow-hidden border-2 border-[#A1A696] shrink-0 shadow-md bg-[#3F4633]">
             <img 
               src="/products/hakeem-mohsin-ali.jpg" 
               alt="Dr. Hakeem Hafiz Mohsin Ali"
-              className="w-full h-full object-cover object-top"
+              className="w-full h-full object-contain"
             />
           </div>
           <div className="space-y-2 text-center lg:text-left flex-1">
