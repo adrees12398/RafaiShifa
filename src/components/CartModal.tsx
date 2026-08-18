@@ -95,7 +95,8 @@ export const CartModal: React.FC<CartModalProps> = ({
       }
     } catch (err) {
       console.error('Order creation error:', err);
-      setErrorMsg('Failed to submit order. Please check your connection and try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Unknown error occurred';
+      setErrorMsg(`Failed to submit order: ${errorMessage}. Please check your connection and try again.`);
       setIsSubmitting(false);
     }
   };

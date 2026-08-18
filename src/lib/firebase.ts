@@ -94,6 +94,7 @@ export async function createOrder(
 
   // Firestore Write
   try {
+    console.log('🔵 Attempting Firestore write...', { projectId: firebaseConfig.projectId, collection: 'orders' });
     const ordersRef = collection(db, 'orders');
     const firestoreData = {
       orderId: generatedId,
@@ -109,11 +110,14 @@ export async function createOrder(
       timestamp: serverTimestamp()
     };
 
+    console.log('🔵 Writing order data:', firestoreData);
     const docRef = await withTimeout(addDoc(ordersRef, firestoreData), 15000);
+    console.log('✅ Firestore write successful. Document ID:', docRef.id);
     newOrder.id = docRef.id;
   } catch (err) {
     console.error('❌ Firestore write failed:', err);
-    throw err;
+    const errorMessage = err instanceof Error ? err.message : 'Unknown error';
+    throw new Error(`Firestore Error: ${errorMessage}. Please check Firebase Console rules.`);
   }
 
   return newOrder;
