@@ -51,6 +51,27 @@ const saveLocalOrders = (orders: Order[]) => {
     console.error('LocalStorage save error:', e);
   }
 };
+// Timeout helper to prevent infinite hanging on Firestore operations
+const withTimeout = <T>(promise: Promise<T>, ms: number): Promise<T> => {
+  return new Promise<T>((resolve, reject) => {
+    const timer = setTimeout(() => {
+      reject(new Error(`Operation timed out after ${ms}ms`));
+    }, ms);
+
+    promise.then(
+      (result) => {
+        clearTimeout(timer);
+        resolve(result);
+      },
+      (error) => {
+        clearTimeout(timer);
+        reject(error);
+      }
+    );
+  });
+};
+
+// Place Order to Firestore & Local state
 
 // Place Order to Firestore & Local state
 export async function createOrder(
@@ -88,10 +109,11 @@ export async function createOrder(
       timestamp: serverTimestamp()
     };
 
-    const docRef = await addDoc(ordersRef, firestoreData);
+    const docRef = await withTimeout(addDoc(ordersRef, firestoreData), 15000);
     newOrder.id = docRef.id;
   } catch (err) {
-    console.warn('Firestore write warning (using resilient local store):', err);
+    console.error('❌ Firestore write failed:', err);
+    throw err;
   }
 
   return newOrder;
