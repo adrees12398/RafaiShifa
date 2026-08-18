@@ -111,7 +111,7 @@ export async function createOrder(
     };
 
     console.log('🔵 Writing order data:', firestoreData);
-    const docRef = await withTimeout(addDoc(ordersRef, firestoreData), 15000);
+    const docRef = await withTimeout(addDoc(ordersRef, firestoreData), 45000);
     console.log('✅ Firestore write successful. Document ID:', docRef.id);
     newOrder.id = docRef.id;
   } catch (err) {
@@ -183,16 +183,26 @@ export function subscribeOrders(onUpdate: (orders: Order[]) => void): () => void
   return unsubscribe;
 }
 
-// Quick connection check to surface Firestore status in the admin dashboard
+// Quick connection check to surface Firestore status in the admin dashboard.
+// Uses the Firestore REST API directly (simple HTTPS GET) so it works even if
+// the gRPC-Web transport is slow to establish, and returns clear error messages.
 export async function checkFirestoreConnection(): Promise<{ ok: boolean; message: string }> {
+  const { projectId, apiKey } = firebaseConfig;
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/orders?pageSize=1&key=${apiKey}`;
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), 30000);
   try {
-    const ordersRef = collection(db, 'orders');
-    await withTimeout(getDocs(ordersRef), 10000);
-    return { ok: true, message: 'Connected to Firestore' };
+    const res = await fetch(url, { signal: controller.signal });
+    clearTimeout(timer);
+    if (res.ok) {
+      return { ok: true, message: 'Connected to Firestore' };
+    }
+    const body = await res.text();
+    return { ok: false, message: `HTTP ${res.status}: ${body.slice(0, 300)}` };
   } catch (err) {
+    clearTimeout(timer);
     const msg = err instanceof Error ? err.message : String(err);
-    const code = (err as { code?: string })?.code;
-    return { ok: false, message: code ? `${code} - ${msg}` : msg };
+    return { ok: false, message: msg };
   }
 }
 
@@ -214,7 +224,7 @@ export async function updateOrderStatusInDb(
   // Update Firestore
   try {
     const orderRef = doc(db, 'orders', orderDocIdOrOrderId);
-    await updateDoc(orderRef, { status: newStatus });
+    await withTimeout(updateDoc(orderRef, { status: newStatus }), 30000);
   } catch (e) {
     console.warn('Firestore update failed, saved to local cache:', e);
   }
@@ -240,12 +250,12 @@ export async function sendContactMessage(
   // Firestore
   try {
     const messagesRef = collection(db, 'messages');
-    await addDoc(messagesRef, {
+    await withTimeout(addDoc(messagesRef, {
       ...msg,
       createdAt: new Date().toISOString(),
       status: 'Unread',
       timestamp: serverTimestamp()
-    });
+    }), 30000);
   } catch (e) {
     console.warn('Firestore message save note:', e);
   }
