@@ -62,9 +62,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
   // Firestore connection status
   const [fsStatus, setFsStatus] = useState<{ ok: boolean; message: string } | null>(null);
   const [checkingFs, setCheckingFs] = useState(false);
+  const [fsErrorDismissed, setFsErrorDismissed] = useState(false);
 
   const runConnectionCheck = async (showLoading = false) => {
     if (showLoading) setCheckingFs(true);
+    setFsErrorDismissed(false);
     setFsStatus(await checkFirestoreConnection());
     if (showLoading) setCheckingFs(false);
   };
@@ -393,6 +395,21 @@ export const AdminView: React.FC<AdminViewProps> = ({
           </button>
         </div>
       </div>
+
+      {/* Firestore error banner (dismissible) */}
+      {fsStatus && !fsStatus.ok && !fsErrorDismissed && (
+        <div className="relative bg-red-50 border border-red-200 text-red-800 p-3.5 pr-10 rounded-2xl text-xs space-y-1 shadow-sm">
+          <span className="font-bold">Firestore connection failed</span>
+          <p className="font-mono break-all">{fsStatus.message}</p>
+          <button
+            onClick={() => setFsErrorDismissed(true)}
+            aria-label="Close"
+            className="absolute top-3 right-3 w-6 h-6 rounded-full bg-red-100 text-red-700 hover:bg-red-200 flex items-center justify-center transition-colors"
+          >
+            <X className="w-3.5 h-3.5" />
+          </button>
+        </div>
+      )}
 
       {/* Analytics Overview Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">

@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BlogPost } from '../types';
 import { INITIAL_BLOGS } from '../data/initialData';
 import { 
@@ -35,6 +35,15 @@ export const BlogView: React.FC = () => {
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
+
+  // Close article reader on Escape key
+  useEffect(() => {
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape' && selectedBlog) setSelectedBlog(null);
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+  }, [selectedBlog]);
 
   return (
     <div className="space-y-8 pb-16">
@@ -142,8 +151,8 @@ export const BlogView: React.FC = () => {
 
       {/* Article Reader Modal */}
       {selectedBlog && (
-        <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200">
-          <div className="bg-white rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-stone-200 my-8 relative">
+        <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm flex items-center justify-center p-4 overflow-y-auto animate-in fade-in duration-200" onClick={() => setSelectedBlog(null)}>
+          <div className="bg-white rounded-3xl max-w-3xl w-full overflow-hidden shadow-2xl border border-stone-200 my-8 relative" onClick={(e) => e.stopPropagation()}>
             
             <button
               onClick={() => setSelectedBlog(null)}

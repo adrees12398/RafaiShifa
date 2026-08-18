@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { CartItem, Order } from '../types';
 import { createOrder } from '../lib/firebase';
 import { 
@@ -44,6 +44,17 @@ export const CartModal: React.FC<CartModalProps> = ({
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [completedOrder, setCompletedOrder] = useState<Order | null>(null);
   const [errorMsg, setErrorMsg] = useState('');
+
+  // Close on Escape key (declared before any early return per hooks rules)
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') handleResetAndClose();
+    };
+    window.addEventListener('keydown', handleKey);
+    return () => window.removeEventListener('keydown', handleKey);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOpen, step]);
 
   if (!isOpen) return null;
 
@@ -108,8 +119,8 @@ export const CartModal: React.FC<CartModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm flex justify-end animate-in fade-in duration-200">
-      <div className="safe-bottom bg-[#F9F9F6] w-full sm:max-w-md md:max-w-lg h-full shadow-2xl flex flex-col justify-between overflow-hidden border-l border-[#A1A696]/30 relative">
+    <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm flex justify-end animate-in fade-in duration-200" onClick={handleResetAndClose}>
+      <div className="safe-bottom bg-[#F9F9F6] w-full sm:max-w-md md:max-w-lg h-full shadow-2xl flex flex-col justify-between overflow-hidden border-l border-[#A1A696]/30 relative" onClick={(e) => e.stopPropagation()}>
         
         {/* Header */}
         <div className="bg-[#525A43] text-white p-4 sm:p-5 flex items-center justify-between border-b border-[#A1A696]/30">
