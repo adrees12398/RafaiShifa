@@ -14,15 +14,17 @@ import {
 import { Order, ContactMessage, Product } from '../types';
 import { INITIAL_PRODUCTS } from '../data/initialData';
 
-// Standard Firebase config - loaded from environment variables
+// Standard Firebase config - loaded from environment variables,
+// with hardcoded fallback values so Firestore works even in deployed
+// environments (e.g. AI Studio/Cloud Run) that do not inject VITE_* vars.
 const firebaseConfig = {
-  apiKey: import.meta.env.VITE_FIREBASE_API_KEY,
-  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN,
-  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID,
-  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET,
-  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID,
-  appId: import.meta.env.VITE_FIREBASE_APP_ID,
-  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID
+  apiKey: import.meta.env.VITE_FIREBASE_API_KEY || 'AIzaSyDG0YsPiApnWw53FPXR0UulB9AVlidMr2Y',
+  authDomain: import.meta.env.VITE_FIREBASE_AUTH_DOMAIN || 'rafaishifa-a0591.firebaseapp.com',
+  projectId: import.meta.env.VITE_FIREBASE_PROJECT_ID || 'rafaishifa-a0591',
+  storageBucket: import.meta.env.VITE_FIREBASE_STORAGE_BUCKET || 'rafaishifa-a0591.firebasestorage.app',
+  messagingSenderId: import.meta.env.VITE_FIREBASE_MESSAGING_SENDER_ID || '288702974324',
+  appId: import.meta.env.VITE_FIREBASE_APP_ID || '1:288702974324:web:d51143e594da57f4c64421',
+  measurementId: import.meta.env.VITE_FIREBASE_MEASUREMENT_ID || 'G-QSX0QTYTL6'
 };
 
 // Initialize Firebase
