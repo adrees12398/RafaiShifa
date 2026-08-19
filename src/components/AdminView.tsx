@@ -802,7 +802,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
       {/* ORDER DETAILS MODAL */}
       {selectedOrder && (
-        <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm flex items-center justify-center p-4 animate-in fade-in">
+        <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm overflow-y-auto animate-in fade-in">
+          <div className="flex min-h-full items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-5 border border-stone-200 shadow-2xl relative">
             <button
               onClick={() => setSelectedOrder(null)}
@@ -863,11 +864,13 @@ export const AdminView: React.FC<AdminViewProps> = ({
             </div>
           </div>
         </div>
+        </div>
       )}
 
       {/* ADD / EDIT PRODUCT MODAL */}
       {showAddProductModal && (
-        <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border border-stone-200 shadow-2xl relative">
             <button
               onClick={closeProductModal}
@@ -994,6 +997,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </button>
             </form>
           </div>
+        </div>
         </div>
       )}
 
