@@ -26,6 +26,7 @@ import {
   LogOut, 
   ShieldCheck,
   Trash2,
+  Pencil,
   Image as ImageIcon,
   Upload
 } from 'lucide-react';
@@ -73,6 +74,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
   // New Product Modal State
   const [showAddProductModal, setShowAddProductModal] = useState(false);
+  const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [newProdName, setNewProdName] = useState('');
   const [newProdUrdu, setNewProdUrdu] = useState('');
   const [newProdPrice, setNewProdPrice] = useState<number>(500);
@@ -183,10 +185,70 @@ export const AdminView: React.FC<AdminViewProps> = ({
     }
   };
 
-  const handleAddProduct = (e: React.FormEvent) => {
+  const handleEditProduct = (p: Product) => {
+    setEditingProduct(p);
+    setNewProdName(p.name);
+    setNewProdUrdu(p.urduName || '');
+    setNewProdPrice(p.price);
+    setNewProdCategory(p.category);
+    setNewProdDesc(p.description);
+    setNewProdDosage(p.dosage);
+    setNewProdImageUrl(p.imageUrl);
+    setShowAddProductModal(true);
+  };
+
+  const closeProductModal = () => {
+    setShowAddProductModal(false);
+    setEditingProduct(null);
+    setNewProdName('');
+    setNewProdUrdu('');
+    setNewProdPrice(500);
+    setNewProdDesc('');
+    setNewProdDosage('1 teaspoon twice daily');
+    setNewProdImageUrl('');
+  };
+
+  const openAddProductModal = () => {
+    setEditingProduct(null);
+    setNewProdName('');
+    setNewProdUrdu('');
+    setNewProdPrice(500);
+    setNewProdDesc('');
+    setNewProdDosage('1 teaspoon twice daily');
+    setNewProdImageUrl('');
+    setShowAddProductModal(true);
+  };
+
+  const handleSubmitProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProdName.trim()) return;
 
+    // EDIT: update existing product and save
+    if (editingProduct) {
+      const newPrice = Number(newProdPrice) || editingProduct.price;
+      const updated = products.map((p) =>
+        p.id === editingProduct.id
+          ? {
+              ...p,
+              name: newProdName.trim(),
+              urduName: newProdUrdu.trim() || p.urduName,
+              price: newPrice,
+              originalPrice:
+                p.originalPrice && p.originalPrice > newPrice ? p.originalPrice : newPrice + 200,
+              category: newProdCategory,
+              description: newProdDesc.trim() || p.description,
+              dosage: newProdDosage.trim() || p.dosage,
+              imageUrl: newProdImageUrl.trim() || p.imageUrl
+            }
+          : p
+      );
+      setProducts(updated);
+      saveStoredProducts(updated);
+      closeProductModal();
+      return;
+    }
+
+    // ADD: create new product
     const newProd: Product = {
       id: 'prod-' + Date.now(),
       name: newProdName.trim(),
@@ -645,7 +707,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
             </div>
 
             <button
-              onClick={() => setShowAddProductModal(true)}
+              onClick={openAddProductModal}
               className="px-4 py-2.5 rounded-xl bg-[#525A43] text-white font-bold text-xs flex items-center gap-2 hover:bg-[#3F4633] shadow-md"
             >
               <Plus className="w-4 h-4" />
@@ -684,14 +746,23 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     <div className="text-xs font-black text-[#525A43] mt-1">Rs. {p.price}</div>
                   </div>
                   
-                  {/* Delete Button */}
-                  <button
-                    onClick={() => handleDeleteProduct(p.id)}
-                    className="absolute top-2 right-2 p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 opacity-0 group-hover:opacity-100 transition-opacity"
-                    title="Delete Product"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
+                  {/* Edit & Delete Buttons */}
+                  <div className="absolute top-2 right-2 flex items-center gap-1.5 opacity-100 sm:opacity-0 group-hover:opacity-100 transition-opacity">
+                    <button
+                      onClick={() => handleEditProduct(p)}
+                      className="p-1.5 rounded-lg bg-[#A1A696]/20 hover:bg-[#A1A696]/30 text-[#525A43]"
+                      title="Edit Product"
+                    >
+                      <Pencil className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteProduct(p.id)}
+                      className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600"
+                      title="Delete Product"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </button>
+                  </div>
                 </div>
               );
             })}
@@ -794,22 +865,22 @@ export const AdminView: React.FC<AdminViewProps> = ({
         </div>
       )}
 
-      {/* ADD PRODUCT MODAL */}
+      {/* ADD / EDIT PRODUCT MODAL */}
       {showAddProductModal && (
         <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm flex items-center justify-center p-4">
           <div className="bg-white rounded-3xl max-w-md w-full p-6 space-y-4 border border-stone-200 shadow-2xl relative">
             <button
-              onClick={() => setShowAddProductModal(false)}
+              onClick={closeProductModal}
               className="absolute top-4 right-4 p-2 rounded-full hover:bg-stone-100"
             >
               <X className="w-5 h-5" />
             </button>
 
             <h3 className="text-lg font-bold font-serif text-[#2F3428] border-b pb-2">
-              Add Herbal Medicine to Catalog
+              {editingProduct ? 'Edit Herbal Medicine' : 'Add Herbal Medicine to Catalog'}
             </h3>
 
-            <form onSubmit={handleAddProduct} className="space-y-3 text-xs">
+            <form onSubmit={handleSubmitProduct} className="space-y-3 text-xs">
               <div>
                 <label className="block font-bold text-[#2F3428] mb-1">Product Name (English)</label>
                 <input
@@ -919,7 +990,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 type="submit"
                 className="w-full py-3 rounded-xl bg-[#525A43] text-white hover:bg-[#3F4633] font-bold text-xs"
               >
-                Add Product to Store
+                {editingProduct ? 'Save Changes' : 'Add Product to Store'}
               </button>
             </form>
           </div>
