@@ -151,7 +151,7 @@ export const BlogView: React.FC = () => {
 
       {/* Article Reader Modal */}
       {selectedBlog && (
-        <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200" onClick={() => setSelectedBlog(null)}>
+        <div className="fixed inset-0 h-dvh z-50 bg-[#2F3428]/70 backdrop-blur-sm overflow-y-auto animate-in fade-in duration-200" onClick={() => setSelectedBlog(null)}>
           <div className="flex min-h-full items-center justify-center p-4">
           <div className="bg-white rounded-3xl w-full max-w-3xl overflow-hidden shadow-2xl border border-stone-200 relative" onClick={(e) => e.stopPropagation()}>
             

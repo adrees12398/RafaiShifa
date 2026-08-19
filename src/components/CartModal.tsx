@@ -119,7 +119,7 @@ export const CartModal: React.FC<CartModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-[#2F3428]/70 backdrop-blur-sm flex justify-end animate-in fade-in duration-200" onClick={handleResetAndClose}>
+    <div className="fixed inset-0 h-dvh z-50 bg-[#2F3428]/70 backdrop-blur-sm flex justify-end animate-in fade-in duration-200" onClick={handleResetAndClose}>
       <div className="safe-bottom bg-[#F9F9F6] w-full sm:max-w-md md:max-w-lg h-full shadow-2xl flex flex-col justify-between overflow-hidden border-l border-[#A1A696]/30 relative" onClick={(e) => e.stopPropagation()}>
         
         {/* Header */}
