@@ -35,7 +35,9 @@ export const db = getFirestore(app);
 // Local persistence storage keys for instant local fallback & seamless sync
 const LOCAL_ORDERS_KEY = 'rafaishifa_orders_v1';
 const LOCAL_MESSAGES_KEY = 'rafaishifa_messages_v1';
-const LOCAL_PRODUCTS_KEY = 'rafaishifa_products_v1';
+// v2 forces browsers with the old (stale) cached catalog to reload fresh data
+const LOCAL_PRODUCTS_KEY = 'rafaishifa_products_v2';
+const LEGACY_PRODUCTS_KEY = 'rafaishifa_products_v1';
 
 // Get local stored orders
 const getLocalOrders = (): Order[] => {
@@ -284,12 +286,37 @@ export async function fetchContactMessages(): Promise<ContactMessage[]> {
   }
 }
 
+// Product images that are known to exist (bundled under /products/).
+const KNOWN_PRODUCT_IMAGES = new Set(
+  INITIAL_PRODUCTS.map((p) => p.imageUrl).filter((u) => u.startsWith('/products/'))
+);
+
+// A local /products/ path that is NOT a known bundled file is a stale/broken
+// reference left over from an older version of the app (e.g. `.jpg` vs `.jpeg`).
+const isStaleImageUrl = (url: string): boolean =>
+  url.startsWith('/products/') && !KNOWN_PRODUCT_IMAGES.has(url);
+
+// Repair stale image URLs on any product list (local cache or cloud catalog)
+// by swapping in the bundled image URL for known products.
+const repairProductImages = (list: Product[]): Product[] =>
+  list.map((p) => {
+    if (isStaleImageUrl(p.imageUrl)) {
+      const seed = INITIAL_PRODUCTS.find((s) => s.id === p.id);
+      if (seed && !isStaleImageUrl(seed.imageUrl)) {
+        return { ...p, imageUrl: seed.imageUrl };
+      }
+    }
+    return p;
+  });
+
 // Products Catalog Management
 export function getStoredProducts(): Product[] {
   try {
-    const cached = localStorage.getItem(LOCAL_PRODUCTS_KEY);
+    const cached =
+      localStorage.getItem(LOCAL_PRODUCTS_KEY) ||
+      localStorage.getItem(LEGACY_PRODUCTS_KEY);
     if (cached) {
-      return JSON.parse(cached);
+      return repairProductImages(JSON.parse(cached) as Product[]);
     }
   } catch {}
   return INITIAL_PRODUCTS;
@@ -334,9 +361,14 @@ export function subscribeProducts(onUpdate: (products: Product[]) => void): () =
         const data = snapshot.exists() ? snapshot.data() : null;
         const items = Array.isArray(data?.items) ? (data.items as Product[]) : null;
         if (items) {
-          saveStoredProducts(items);
-          onUpdate(items);
-          console.log('✅ Products loaded from Firestore:', items.length);
+          const repaired = repairProductImages(items);
+          saveStoredProducts(repaired);
+          onUpdate(repaired);
+          console.log('✅ Products loaded from Firestore:', repaired.length);
+        } else {
+          // Catalog not in cloud yet: seed it from the current local list so
+          // every browser/device converges to the same catalog.
+          seedCatalogFromLocal();
         }
       },
       (error) => {
@@ -349,4 +381,13 @@ export function subscribeProducts(onUpdate: (products: Product[]) => void): () =
     onUpdate(getStoredProducts());
   }
   return unsubscribe;
+}
+
+// Push the best current local catalog into the cloud (used when the cloud
+// catalog does not exist yet). Local OVERRIDES bundled defaults.
+function seedCatalogFromLocal(): void {
+  const local = getStoredProducts();
+  if (local.length > 0) {
+    syncProductsToDb(local);
+  }
 }
