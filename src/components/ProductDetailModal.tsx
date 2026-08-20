@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Product } from '../types';
+import { getProductImageSrc } from '../lib/productImages';
 import { 
   X, 
   Star, 
@@ -38,20 +39,7 @@ export const ProductDetailModal: React.FC<ProductDetailModalProps> = ({
 
   if (!product) return null;
 
-  // Get image from localStorage if it's a local path
-  const getImageSrc = (imageUrl: string) => {
-    if (imageUrl.startsWith('/products/')) {
-      try {
-        const productImages = JSON.parse(localStorage.getItem('product_images') || '{}');
-        return productImages[imageUrl] || imageUrl;
-      } catch {
-        return imageUrl;
-      }
-    }
-    return imageUrl;
-  };
-
-  const imageSrc = getImageSrc(product.imageUrl);
+  const imageSrc = getProductImageSrc(product.imageUrl);
 
   const handleAdd = () => {
     onAddToCart(product, quantity);

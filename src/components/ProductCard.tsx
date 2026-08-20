@@ -1,6 +1,7 @@
 import React from 'react';
 import { Product } from '../types';
 import { Star, ShoppingBag, Eye, Check } from 'lucide-react';
+import { getProductImageSrc } from '../lib/productImages';
 
 interface ProductCardProps {
   product: Product;
@@ -15,21 +16,7 @@ export const ProductCard: React.FC<ProductCardProps> = ({
   onQuickView,
   isInCart = false
 }) => {
-  // Get image from localStorage if it's a local path
-  const getImageSrc = (imageUrl: string) => {
-    // If it's a local path starting with /products/
-    if (imageUrl.startsWith('/products/')) {
-      try {
-        const productImages = JSON.parse(localStorage.getItem('product_images') || '{}');
-        return productImages[imageUrl] || imageUrl;
-      } catch {
-        return imageUrl;
-      }
-    }
-    return imageUrl;
-  };
-
-  const imageSrc = getImageSrc(product.imageUrl);
+  const imageSrc = getProductImageSrc(product.imageUrl);
 
   return (
     <div className="group bg-white rounded-2xl overflow-hidden border border-[#A1A696]/30 shadow-sm hover:shadow-xl transition-all duration-300 flex flex-col h-full relative">

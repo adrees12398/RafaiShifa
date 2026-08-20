@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Product, NavTab } from '../types';
 import { ProductCard } from './ProductCard';
+import { getProductImageSrc } from '../lib/productImages';
 import { 
   Sparkles, 
   ShieldCheck, 
@@ -140,9 +141,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div className="lg:col-span-5 flex justify-center">
             <div className="relative w-full max-w-sm rounded-2xl sm:rounded-3xl overflow-hidden bg-[#3F4633] p-1 border border-[#A1A696]/40 shadow-2xl">
               <img 
-                src={products.length > 0 ? products[0].imageUrl : '/products/LiverBoost.jpeg'} 
+                src={products.length > 0 ? getProductImageSrc(products[0].imageUrl) : '/products/LiverBoost.jpeg'} 
                 alt="RafaiShifa Herbal Remedies"
-                className="w-full aspect-4/3 object-cover rounded-xl sm:rounded-2xl shadow-md"
+                className="w-full aspect-4/3 object-contain rounded-xl sm:rounded-2xl shadow-md"
+                onError={(e) => {
+                  e.currentTarget.src = '/products/LiverBoost.jpeg';
+                }}
               />
               <div className="p-3 sm:p-4 bg-[#2F3428] rounded-xl sm:rounded-2xl mt-1 border border-[#A1A696]/30 flex items-center justify-between gap-2">
                 <div className="min-w-0">
