@@ -54,7 +54,7 @@ export const TeamView: React.FC = () => {
               <img 
                 src={headPhysician.imageUrl} 
                 alt={headPhysician.name}
-                className="w-full h-full object-contain bg-stone-100"
+                className="w-full h-full object-cover object-top"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-[#2F3428] via-[#2F3428]/20 to-transparent flex flex-col justify-end p-4 sm:p-5 text-white">
                 <div className="inline-block px-2 sm:px-2.5 py-0.5 sm:py-1 rounded-md bg-[#A1A696] text-[#2F3428] text-[10px] sm:text-[11px] font-bold w-max mb-1">
