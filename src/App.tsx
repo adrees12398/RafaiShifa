@@ -5,7 +5,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { NavTab, Product, CartItem } from './types';
-import { getStoredProducts } from './lib/firebase';
+import { getStoredProducts, subscribeProducts } from './lib/firebase';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { HomeView } from './components/HomeView';
@@ -25,9 +25,12 @@ export default function App() {
   const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
-  // Load Initial Products & Stored Cart
+  // Load Initial Products & Stored Cart, then sync catalog from Firestore
   useEffect(() => {
     setProducts(getStoredProducts());
+    const unsubscribe = subscribeProducts((cloudProducts) => {
+      setProducts(cloudProducts);
+    });
     try {
       const savedCart = localStorage.getItem('rafaishifa_cart_v1');
       if (savedCart) {
@@ -36,6 +39,7 @@ export default function App() {
     } catch (e) {
       console.error('Cart load error:', e);
     }
+    return unsubscribe;
   }, []);
 
   // Save Cart to localStorage on changes

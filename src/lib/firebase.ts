@@ -9,7 +9,8 @@ import {
   query, 
   orderBy, 
   onSnapshot,
-  serverTimestamp 
+  serverTimestamp,
+  setDoc 
 } from 'firebase/firestore';
 import { Order, ContactMessage, Product } from '../types';
 import { INITIAL_PRODUCTS } from '../data/initialData';
@@ -300,4 +301,52 @@ export function saveStoredProducts(products: Product[]): void {
   } catch (e) {
     console.error('Failed to save products locally:', e);
   }
+  syncProductsToDb(products);
+}
+
+// Cloud catalog doc for products (single document holds the full catalog).
+const PRODUCTS_CATALOG_DOC = 'products/catalog';
+
+// Push the whole catalog to Firestore so every browser/device stays in sync.
+export async function syncProductsToDb(products: Product[]): Promise<void> {
+  try {
+    await withTimeout(
+      setDoc(doc(db, PRODUCTS_CATALOG_DOC), {
+        items: products,
+        updatedAt: serverTimestamp()
+      }),
+      30000
+    );
+    console.log('✅ Products catalog synced to Firestore:', products.length);
+  } catch (e) {
+    console.warn('⚠️ Products sync to Firestore failed (offline/rules). Local only:', e);
+  }
+}
+
+// Real-time listener for the cloud products catalog. Falls back to local cache.
+export function subscribeProducts(onUpdate: (products: Product[]) => void): () => void {
+  let unsubscribe = () => {};
+  try {
+    const catalogRef = doc(db, PRODUCTS_CATALOG_DOC);
+    unsubscribe = onSnapshot(
+      catalogRef,
+      (snapshot) => {
+        const data = snapshot.exists() ? snapshot.data() : null;
+        const items = Array.isArray(data?.items) ? (data.items as Product[]) : null;
+        if (items) {
+          saveStoredProducts(items);
+          onUpdate(items);
+          console.log('✅ Products loaded from Firestore:', items.length);
+        }
+      },
+      (error) => {
+        console.error('❌ Products Firestore snapshot error:', error);
+        onUpdate(getStoredProducts());
+      }
+    );
+  } catch (e) {
+    console.error('❌ Products Firestore connection error:', e);
+    onUpdate(getStoredProducts());
+  }
+  return unsubscribe;
 }
