@@ -2,7 +2,7 @@ import React from 'react';
 import { MapPin, Navigation, Clock } from 'lucide-react';
 
 const STORE_NAME = 'Rafa i Shifa';
-const STORE_ADDRESS = 'Dev Samaj Road, Sanat Nagar, Lahore, Pakistan';
+const STORE_ADDRESS = '15 Dev Samaj Road, Near Government Islamia High School, Sant Nagar, Lahore, Pakistan';
 const MAPS_QUERY = encodeURIComponent(`${STORE_NAME}, ${STORE_ADDRESS}`);
 const DIRECTIONS_URL = `https://www.google.com/maps/dir/?api=1&destination=${MAPS_QUERY}`;
 
