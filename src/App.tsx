@@ -8,6 +8,7 @@ import { NavTab, Product, CartItem } from './types';
 import { getStoredProducts, subscribeProducts } from './lib/firebase';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
+import { LocationMap } from './components/LocationMap';
 import { HomeView } from './components/HomeView';
 import { BlogView } from './components/BlogView';
 import { HelpView } from './components/HelpView';
@@ -132,6 +133,11 @@ export default function App() {
           />
         )}
       </main>
+
+      {/* Store Location Map */}
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <LocationMap />
+      </div>
 
       {/* Footer */}
       <Footer setActiveTab={setActiveTab} />
