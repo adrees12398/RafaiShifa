@@ -7,6 +7,7 @@ import {
   saveStoredProducts,
   checkFirestoreConnection
 } from '../lib/firebase';
+import { uploadProductImage } from '../lib/cloudinary';
 import { 
   Lock, 
   KeyRound, 
@@ -75,6 +76,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
   // New Product Modal State
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
+  const [isUploadingImage, setIsUploadingImage] = useState(false);
   const [newProdName, setNewProdName] = useState('');
   const [newProdUrdu, setNewProdUrdu] = useState('');
   const [newProdPrice, setNewProdPrice] = useState<number>(500);
@@ -288,7 +290,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     saveStoredProducts(updated);
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
@@ -298,7 +300,20 @@ export const AdminView: React.FC<AdminViewProps> = ({
       return;
     }
 
-    // Create a local URL for preview and use
+    // Preferred: upload to Cloudinary -> permanent URL, works on ALL devices
+    try {
+      setIsUploadingImage(true);
+      const url = await uploadProductImage(file);
+      setNewProdImageUrl(url);
+      alert('Image uploaded! It will be visible on every device.');
+      return;
+    } catch (err) {
+      console.warn('Cloudinary upload failed, using local fallback:', err);
+    } finally {
+      setIsUploadingImage(false);
+    }
+
+    // Fallback: local-only base64 (visible only in this browser)
     const reader = new FileReader();
     reader.onload = (event) => {
       const imageData = event.target?.result as string;
@@ -320,7 +335,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
         productImages[imagePath] = imageData;
         localStorage.setItem('product_images', JSON.stringify(productImages));
         
-        alert(`Image ready! It will be saved as ${imagePath}\n\nNote: In production, this would upload to your server.`);
+        alert(`Image ready (THIS BROWSER ONLY)! It will be saved as ${imagePath}\n\nTip: Configure Cloudinary to make images visible on all devices.`);
       } catch (e) {
         console.error('Failed to store image:', e);
         // Still set the image URL so form can be submitted
@@ -940,14 +955,15 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 
                 {/* File Upload Button */}
                 <div className="flex items-center gap-2">
-                  <label className="flex-1 px-3 py-2 border-2 border-dashed border-[#525A43] rounded-lg hover:bg-stone-50 cursor-pointer transition-colors flex items-center justify-center gap-2 text-xs font-semibold text-[#525A43]">
+                  <label className={`flex-1 px-3 py-2 border-2 border-dashed border-[#525A43] rounded-lg hover:bg-stone-50 cursor-pointer transition-colors flex items-center justify-center gap-2 text-xs font-semibold text-[#525A43] ${isUploadingImage ? 'opacity-50 pointer-events-none' : ''}`}>
                     <Upload className="w-4 h-4" />
-                    <span>Upload from PC</span>
+                    <span>{isUploadingImage ? 'Uploading...' : 'Upload from PC'}</span>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageUpload}
                       className="hidden"
+                      disabled={isUploadingImage}
                     />
                   </label>
                 </div>
@@ -991,9 +1007,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
               <button
                 type="submit"
-                className="w-full py-3 rounded-xl bg-[#525A43] text-white hover:bg-[#3F4633] font-bold text-xs"
+                disabled={isUploadingImage}
+                className="w-full py-3 rounded-xl bg-[#525A43] text-white hover:bg-[#3F4633] font-bold text-xs disabled:opacity-50"
               >
-                {editingProduct ? 'Save Changes' : 'Add Product to Store'}
+                {isUploadingImage ? 'Uploading image...' : (editingProduct ? 'Save Changes' : 'Add Product to Store')}
               </button>
             </form>
           </div>
