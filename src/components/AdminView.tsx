@@ -8,6 +8,16 @@ import {
   checkFirestoreConnection
 } from '../lib/firebase';
 import { uploadProductImage } from '../lib/cloudinary';
+
+// Convert a base64 data URL (old localStorage format) into a File for upload.
+function dataUrlToFile(dataUrl: string, name = 'product-image'): File {
+  const parts = dataUrl.split(',');
+  const mime = parts[0].match(/:(.*?);/)?.[1] || 'image/jpeg';
+  const binary = atob(parts[1]);
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) bytes[i] = binary.charCodeAt(i);
+  return new File([bytes], name, { type: mime });
+}
 import { 
   Lock, 
   KeyRound, 
@@ -77,6 +87,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
   const [showAddProductModal, setShowAddProductModal] = useState(false);
   const [editingProduct, setEditingProduct] = useState<Product | null>(null);
   const [isUploadingImage, setIsUploadingImage] = useState(false);
+  const [isMigratingImages, setIsMigratingImages] = useState(false);
   const [newProdName, setNewProdName] = useState('');
   const [newProdUrdu, setNewProdUrdu] = useState('');
   const [newProdPrice, setNewProdPrice] = useState<number>(500);
@@ -288,6 +299,47 @@ export const AdminView: React.FC<AdminViewProps> = ({
     const updated = products.filter(p => p.id !== productId);
     setProducts(updated);
     saveStoredProducts(updated);
+  };
+
+  // One-click migration: move old localStorage (base64) product images to
+  // Cloudinary so they become permanent URLs visible on every device.
+  const handleMigrateImages = async () => {
+    let entries: [string, string][] = [];
+    try {
+      const stored = JSON.parse(localStorage.getItem('product_images') || '{}');
+      entries = Object.entries(stored) as [string, string][];
+    } catch {}
+
+    if (entries.length === 0) {
+      alert('No old local images found. All product images are already permanent.');
+      return;
+    }
+    if (!confirm(`${entries.length} old local image(s) found.\n\nUpload them all to Cloudinary and attach to their products?\n\nAfter this, images will never disappear on any device.`)) return;
+
+    setIsMigratingImages(true);
+    try {
+      const updated = [...products];
+      let migrated = 0;
+      for (const [path, dataUrl] of entries) {
+        try {
+          const file = dataUrlToFile(dataUrl);
+          const url = await uploadProductImage(file);
+          const idx = updated.findIndex((p) => p.imageUrl === path);
+          if (idx >= 0) {
+            updated[idx] = { ...updated[idx], imageUrl: url };
+            migrated++;
+          }
+        } catch (err) {
+          console.error('Image migration failed for:', path, err);
+        }
+      }
+      setProducts(updated);
+      saveStoredProducts(updated);
+      localStorage.removeItem('product_images');
+      alert(`Done! ${migrated} image(s) migrated to Cloudinary and saved to the cloud catalog.\n\nThey will now show on every device, permanently.`);
+    } finally {
+      setIsMigratingImages(false);
+    }
   };
 
   const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -721,13 +773,23 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </p>
             </div>
 
-            <button
-              onClick={openAddProductModal}
-              className="px-4 py-2.5 rounded-xl bg-[#525A43] text-white font-bold text-xs flex items-center gap-2 hover:bg-[#3F4633] shadow-md"
-            >
-              <Plus className="w-4 h-4" />
-              <span>Add New Medicine</span>
-            </button>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={handleMigrateImages}
+                disabled={isMigratingImages}
+                className="px-3 py-2.5 rounded-xl bg-white border-2 border-[#A1A696] text-[#525A43] font-bold text-xs hover:bg-stone-50 disabled:opacity-50"
+                title="Move old locally-stored images to Cloudinary so they show on every device"
+              >
+                {isMigratingImages ? 'Fixing Images...' : 'Fix Old Images'}
+              </button>
+              <button
+                onClick={openAddProductModal}
+                className="px-4 py-2.5 rounded-xl bg-[#525A43] text-white font-bold text-xs flex items-center gap-2 hover:bg-[#3F4633] shadow-md"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add New Medicine</span>
+              </button>
+            </div>
           </div>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
