@@ -348,6 +348,12 @@ export async function syncProductsToDb(products: Product[]): Promise<void> {
   return new Promise((resolve, reject) => {
     syncTimeout = setTimeout(async () => {
       try {
+        console.log('🔵 Starting Firestore sync...', {
+          productsCount: products.length,
+          projectId: firebaseConfig.projectId,
+          collection: PRODUCTS_CATALOG_DOC
+        });
+        
         await withTimeout(
           setDoc(doc(db, PRODUCTS_CATALOG_DOC), {
             items: products,
@@ -355,10 +361,14 @@ export async function syncProductsToDb(products: Product[]): Promise<void> {
           }),
           30000
         );
+        
         console.log('✅ Products catalog synced to Firestore:', products.length);
+        alert('✅ Products saved to Firestore successfully!');
         resolve();
       } catch (e) {
-        console.warn('⚠️ Products sync to Firestore failed (offline/rules). Local only:', e);
+        console.error('❌ Products sync to Firestore FAILED:', e);
+        const errorMsg = e instanceof Error ? e.message : String(e);
+        alert(`❌ Firestore sync failed!\n\nError: ${errorMsg}\n\nProducts saved locally but NOT synced to cloud.`);
         reject(e);
       }
     }, 500);

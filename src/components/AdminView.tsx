@@ -299,13 +299,23 @@ export const AdminView: React.FC<AdminViewProps> = ({
     // Save to localStorage immediately
     try {
       localStorage.setItem('rafaishifa_products_v2', JSON.stringify(updated));
+      console.log('✅ Product saved to localStorage');
     } catch (e) {
       console.error('Failed to save products locally:', e);
+      alert('❌ Failed to save to localStorage!');
     }
     
-    // Async Firestore sync
+    // Async Firestore sync with error handling
+    console.log('🔵 Attempting Firestore sync...');
     import('../lib/firebase').then(({ syncProductsToDb }) => {
-      syncProductsToDb(updated).catch(err => console.error('Firestore sync failed:', err));
+      syncProductsToDb(updated)
+        .then(() => {
+          console.log('✅ Firestore sync successful');
+        })
+        .catch(err => {
+          console.error('❌ Firestore sync failed:', err);
+          // Alert already shown in syncProductsToDb
+        });
     });
 
     setShowAddProductModal(false);
@@ -811,6 +821,30 @@ export const AdminView: React.FC<AdminViewProps> = ({
             </div>
 
             <div className="flex items-center gap-2">
+              <button
+                onClick={async () => {
+                  console.log('🧪 Testing Firestore write...');
+                  try {
+                    await import('../lib/firebase').then(async ({ db }) => {
+                      const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
+                      const testDoc = doc(db, 'test/connection');
+                      await setDoc(testDoc, {
+                        message: 'Test write from admin panel',
+                        timestamp: serverTimestamp()
+                      });
+                      alert('✅ Firestore write test SUCCESSFUL!\n\nFirestore is working correctly.');
+                    });
+                  } catch (err) {
+                    console.error('❌ Firestore test failed:', err);
+                    const errorMsg = err instanceof Error ? err.message : String(err);
+                    alert(`❌ Firestore test FAILED!\n\nError: ${errorMsg}\n\nCheck:\n1. Firebase config in .env\n2. Firestore rules\n3. Internet connection`);
+                  }
+                }}
+                className="px-3 py-2.5 rounded-xl bg-blue-100 border-2 border-blue-300 text-blue-700 font-bold text-xs hover:bg-blue-200"
+                title="Test Firestore connection"
+              >
+                Test Firestore
+              </button>
               <button
                 onClick={async () => {
                   if (!confirm('⚠️ WARNING: This will DELETE ALL PRODUCTS from localStorage and Firestore!\n\nAre you absolutely sure?')) return;
