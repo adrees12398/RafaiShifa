@@ -252,15 +252,16 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="products-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
             {filteredProducts.map((product) => (
-              <ProductCard
-                key={product.id}
-                product={product}
-                onAddToCart={onAddToCart}
-                onQuickView={onQuickView}
-                isInCart={cartProductIds.includes(product.id)}
-              />
+              <div key={product.id} className="product-grid-item">
+                <ProductCard
+                  product={product}
+                  onAddToCart={onAddToCart}
+                  onQuickView={onQuickView}
+                  isInCart={cartProductIds.includes(product.id)}
+                />
+              </div>
             ))}
           </div>
         )}

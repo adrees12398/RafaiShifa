@@ -335,24 +335,41 @@ export function saveStoredProducts(products: Product[]): void {
 const PRODUCTS_CATALOG_DOC = 'products/catalog';
 
 // Push the whole catalog to Firestore so every browser/device stays in sync.
+// Uses debouncing to prevent rapid consecutive writes.
+let syncTimeout: NodeJS.Timeout | null = null;
+
 export async function syncProductsToDb(products: Product[]): Promise<void> {
-  try {
-    await withTimeout(
-      setDoc(doc(db, PRODUCTS_CATALOG_DOC), {
-        items: products,
-        updatedAt: serverTimestamp()
-      }),
-      30000
-    );
-    console.log('✅ Products catalog synced to Firestore:', products.length);
-  } catch (e) {
-    console.warn('⚠️ Products sync to Firestore failed (offline/rules). Local only:', e);
+  // Cancel any pending sync
+  if (syncTimeout) {
+    clearTimeout(syncTimeout);
   }
+  
+  // Debounce: wait 500ms before actually syncing
+  return new Promise((resolve, reject) => {
+    syncTimeout = setTimeout(async () => {
+      try {
+        await withTimeout(
+          setDoc(doc(db, PRODUCTS_CATALOG_DOC), {
+            items: products,
+            updatedAt: serverTimestamp()
+          }),
+          30000
+        );
+        console.log('✅ Products catalog synced to Firestore:', products.length);
+        resolve();
+      } catch (e) {
+        console.warn('⚠️ Products sync to Firestore failed (offline/rules). Local only:', e);
+        reject(e);
+      }
+    }, 500);
+  });
 }
 
 // Real-time listener for the cloud products catalog. Falls back to local cache.
 export function subscribeProducts(onUpdate: (products: Product[]) => void): () => void {
   let unsubscribe = () => {};
+  let lastUpdateTimestamp = 0;
+  
   try {
     const catalogRef = doc(db, PRODUCTS_CATALOG_DOC);
     unsubscribe = onSnapshot(
@@ -360,11 +377,29 @@ export function subscribeProducts(onUpdate: (products: Product[]) => void): () =
       (snapshot) => {
         const data = snapshot.exists() ? snapshot.data() : null;
         const items = Array.isArray(data?.items) ? (data.items as Product[]) : null;
+        const updateTime = data?.updatedAt?.toMillis?.() || 0;
+        
+        // Prevent duplicate updates from the same Firestore write
+        if (updateTime && updateTime === lastUpdateTimestamp) {
+          console.log('⚠️ Skipping duplicate Firestore snapshot (same timestamp)');
+          return;
+        }
+        lastUpdateTimestamp = updateTime;
+        
         if (items) {
           const repaired = repairProductImages(items);
-          saveStoredProducts(repaired);
-          onUpdate(repaired);
-          console.log('✅ Products loaded from Firestore:', repaired.length);
+          
+          // Only update if products actually changed
+          const currentLocal = getStoredProducts();
+          const isDifferent = JSON.stringify(repaired) !== JSON.stringify(currentLocal);
+          
+          if (isDifferent) {
+            saveStoredProducts(repaired);
+            onUpdate(repaired);
+            console.log('✅ Products updated from Firestore:', repaired.length);
+          } else {
+            console.log('⚠️ Products unchanged, skipping state update');
+          }
         } else {
           // Catalog not in cloud yet: seed it from the current local list so
           // every browser/device converges to the same catalog.

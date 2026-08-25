@@ -256,7 +256,19 @@ export const AdminView: React.FC<AdminViewProps> = ({
           : p
       );
       setProducts(updated);
-      saveStoredProducts(updated);
+      
+      // Save to localStorage immediately
+      try {
+        localStorage.setItem('rafaishifa_products_v2', JSON.stringify(updated));
+      } catch (e) {
+        console.error('Failed to save products locally:', e);
+      }
+      
+      // Async Firestore sync
+      import('../lib/firebase').then(({ syncProductsToDb }) => {
+        syncProductsToDb(updated).catch(err => console.error('Firestore sync failed:', err));
+      });
+      
       closeProductModal();
       return;
     }
@@ -283,7 +295,18 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
     const updated = [newProd, ...products];
     setProducts(updated);
-    saveStoredProducts(updated);
+    
+    // Save to localStorage immediately
+    try {
+      localStorage.setItem('rafaishifa_products_v2', JSON.stringify(updated));
+    } catch (e) {
+      console.error('Failed to save products locally:', e);
+    }
+    
+    // Async Firestore sync
+    import('../lib/firebase').then(({ syncProductsToDb }) => {
+      syncProductsToDb(updated).catch(err => console.error('Firestore sync failed:', err));
+    });
 
     setShowAddProductModal(false);
     setNewProdName('');
@@ -296,9 +319,23 @@ export const AdminView: React.FC<AdminViewProps> = ({
   const handleDeleteProduct = (productId: string) => {
     if (!confirm('Are you sure you want to delete this product?')) return;
     
+    // Optimistic update - immediately update UI
     const updated = products.filter(p => p.id !== productId);
     setProducts(updated);
-    saveStoredProducts(updated);
+    
+    // Save to localStorage immediately
+    try {
+      localStorage.setItem('rafaishifa_products_v2', JSON.stringify(updated));
+    } catch (e) {
+      console.error('Failed to save products locally:', e);
+    }
+    
+    // Async Firestore sync in background (no state update needed - listener will handle)
+    import('../lib/firebase').then(({ syncProductsToDb }) => {
+      syncProductsToDb(updated).catch(err => {
+        console.error('Firestore sync failed:', err);
+      });
+    });
   };
 
   // One-click migration: move old localStorage (base64) product images to

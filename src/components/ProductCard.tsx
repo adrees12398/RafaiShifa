@@ -10,7 +10,7 @@ interface ProductCardProps {
   isInCart?: boolean;
 }
 
-export const ProductCard: React.FC<ProductCardProps> = ({
+const ProductCardComponent: React.FC<ProductCardProps> = ({
   product,
   onAddToCart,
   onQuickView,
@@ -132,3 +132,17 @@ export const ProductCard: React.FC<ProductCardProps> = ({
     </div>
   );
 };
+
+// Memoize ProductCard to prevent unnecessary re-renders when product list changes
+export const ProductCard = React.memo(ProductCardComponent, (prevProps, nextProps) => {
+  // Only re-render if these specific props changed
+  return (
+    prevProps.product.id === nextProps.product.id &&
+    prevProps.product.name === nextProps.product.name &&
+    prevProps.product.price === nextProps.product.price &&
+    prevProps.product.imageUrl === nextProps.product.imageUrl &&
+    prevProps.isInCart === nextProps.isInCart
+  );
+});
+
+ProductCard.displayName = 'ProductCard';
