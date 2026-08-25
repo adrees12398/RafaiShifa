@@ -322,7 +322,16 @@ export function getStoredProducts(): Product[] {
   return INITIAL_PRODUCTS;
 }
 
+// Timestamp of the last LOCAL admin save. Cloud snapshots arriving shortly
+// after a local save are stale (write still in flight) and must not revert
+// the UI to old values.
+let lastLocalSaveAt = 0;
+// When a cloud sync FAILS, local data is the newest truth. Ignore incoming
+// cloud snapshots (they hold older data) until the next successful sync.
+let localOverrideUntilSync = false;
+
 export function saveStoredProducts(products: Product[]): void {
+  lastLocalSaveAt = Date.now();
   try {
     localStorage.setItem(LOCAL_PRODUCTS_KEY, JSON.stringify(products));
   } catch (e) {
@@ -411,12 +420,16 @@ export async function syncProductsToDb(products: Product[]): Promise<void> {
         }, 3, 2000);
 
         lastSyncedProductsJson = outgoingJson;
+        localOverrideUntilSync = false;
         console.log('✅ Products catalog synced to Firestore:', products.length);
         resolve();
       } catch (e) {
         console.error('❌ Products sync to Firestore FAILED after retries:', e);
         const errorMsg = e instanceof Error ? e.message : String(e);
         console.error('Sync error details:', errorMsg);
+        // Keep the local (newer) data authoritative - do not let older cloud
+        // snapshots overwrite the admin's changes.
+        localOverrideUntilSync = true;
         reject(e);
       }
     }, 500);
@@ -433,6 +446,16 @@ export function subscribeProducts(onUpdate: (products: Product[]) => void): () =
     unsubscribe = onSnapshot(
       catalogRef,
       (snapshot) => {
+        // A local save is in flight (or recently failed): cloud data is older
+        // than what the admin just saved - do not revert the UI to it.
+        if (localOverrideUntilSync) {
+          console.log('⏭️ Skipping cloud snapshot - local changes pending sync');
+          return;
+        }
+        if (Date.now() - lastLocalSaveAt < 3000) {
+          console.log('⏭️ Skipping cloud snapshot - local save just happened');
+          return;
+        }
         const data = snapshot.exists() ? snapshot.data() : null;
         const items = Array.isArray(data?.items) ? (data.items as Product[]) : null;
         const updateTime = data?.updatedAt?.toMillis?.() || 0;

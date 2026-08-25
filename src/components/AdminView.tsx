@@ -263,17 +263,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
       );
       setProducts(updated);
       
-      // Save to localStorage immediately
-      try {
-        localStorage.setItem('rafaishifa_products_v2', JSON.stringify(updated));
-      } catch (e) {
-        console.error('Failed to save products locally:', e);
-      }
-      
-      // Async Firestore sync
-      import('../lib/firebase').then(({ syncProductsToDb }) => {
-        syncProductsToDb(updated).catch(err => console.error('Firestore sync failed:', err));
-      });
+      // Save locally + sync to Firestore (centralized)
+      saveStoredProducts(updated);
       
       closeProductModal();
       return;
@@ -302,27 +293,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
     const updated = [newProd, ...products];
     setProducts(updated);
     
-    // Save to localStorage immediately
-    try {
-      localStorage.setItem('rafaishifa_products_v2', JSON.stringify(updated));
-      console.log('✅ Product saved to localStorage');
-    } catch (e) {
-      console.error('Failed to save products locally:', e);
-      alert('❌ Failed to save to localStorage!');
-    }
-    
-    // Async Firestore sync with error handling
-    console.log('🔵 Attempting Firestore sync...');
-    import('../lib/firebase').then(({ syncProductsToDb }) => {
-      syncProductsToDb(updated)
-        .then(() => {
-          console.log('✅ Firestore sync successful');
-        })
-        .catch(err => {
-          console.error('❌ Firestore sync failed:', err);
-          // Alert already shown in syncProductsToDb
-        });
-    });
+    // Save locally + sync to Firestore (centralized)
+    saveStoredProducts(updated);
 
     setShowAddProductModal(false);
     setNewProdName('');
