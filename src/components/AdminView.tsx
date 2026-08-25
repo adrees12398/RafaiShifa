@@ -109,24 +109,30 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
     runConnectionCheck();
     
-    // Track previous orders count for notification
-    let previousOrdersCount = 0;
+    // Track seen order IDs so notifications fire ONLY for genuinely new
+    // orders - not on reconnects/flaps where the list temporarily shrinks
+    // (e.g. Firestore errors falling back to local-only data).
+    const seenOrderIds = new Set<string>();
+    let isFirstSnapshot = true;
 
     const unsubscribe = subscribeOrders((liveOrders) => {
-      // Check for new orders and show notification
-      if (previousOrdersCount > 0 && liveOrders.length > previousOrdersCount) {
-        const newOrder = liveOrders[0];
-        if ('Notification' in window && Notification.permission === 'granted') {
-          new Notification('🛍️ New Order Alert!', {
-            body: `Order ${newOrder.orderId} from ${newOrder.customerName} - Rs. ${newOrder.totalPrice}`,
-            icon: '/products/LiverBoost.jpeg',
-            tag: newOrder.orderId,
-            requireInteraction: true
-          });
+      if (!isFirstSnapshot) {
+        for (const order of liveOrders) {
+          const key = order.orderId || order.id;
+          if (!seenOrderIds.has(key)) {
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('🛍️ New Order Alert!', {
+                body: `Order ${order.orderId} from ${order.customerName} - Rs. ${order.totalPrice}`,
+                icon: '/products/LiverBoost.jpeg',
+                tag: order.orderId
+              });
+            }
+          }
         }
       }
       
-      previousOrdersCount = liveOrders.length;
+      liveOrders.forEach((o) => seenOrderIds.add(o.orderId || o.id));
+      isFirstSnapshot = false;
       setOrders(liveOrders);
       setLoadingOrders(false);
     });
