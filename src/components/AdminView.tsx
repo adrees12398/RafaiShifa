@@ -812,6 +812,36 @@ export const AdminView: React.FC<AdminViewProps> = ({
 
             <div className="flex items-center gap-2">
               <button
+                onClick={async () => {
+                  if (!confirm('⚠️ WARNING: This will DELETE ALL PRODUCTS from localStorage and Firestore!\n\nAre you absolutely sure?')) return;
+                  
+                  try {
+                    // Clear localStorage
+                    localStorage.removeItem('rafaishifa_products_v2');
+                    localStorage.removeItem('rafaishifa_products_v1');
+                    localStorage.removeItem('product_images');
+                    
+                    // Clear state
+                    setProducts([]);
+                    
+                    // Clear Firestore
+                    await import('../lib/firebase').then(({ syncProductsToDb }) => {
+                      return syncProductsToDb([]);
+                    });
+                    
+                    alert('✅ All products cleared successfully!\n\nPage will reload in 2 seconds...');
+                    setTimeout(() => window.location.reload(), 2000);
+                  } catch (err) {
+                    console.error('Failed to clear products:', err);
+                    alert('❌ Failed to clear Firestore. Check console for details.');
+                  }
+                }}
+                className="px-3 py-2.5 rounded-xl bg-red-100 border-2 border-red-300 text-red-700 font-bold text-xs hover:bg-red-200"
+                title="Delete ALL products from everywhere"
+              >
+                Clear All Products
+              </button>
+              <button
                 onClick={handleMigrateImages}
                 disabled={isMigratingImages}
                 className="px-3 py-2.5 rounded-xl bg-white border-2 border-[#A1A696] text-[#525A43] font-bold text-xs hover:bg-stone-50 disabled:opacity-50"
