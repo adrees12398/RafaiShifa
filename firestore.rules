@@ -1,0 +1,33 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Allow public read access to all documents
+    match /{document=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Products collection - anyone can read, anyone can write (for testing)
+    match /products/{document=**} {
+      allow read: if true;
+      allow write: if true;
+    }
+    
+    // Orders collection - anyone can create orders
+    match /orders/{orderId} {
+      allow create: if true;
+      allow read, update: if true;
+    }
+    
+    // Messages collection - anyone can send messages
+    match /messages/{messageId} {
+      allow create: if true;
+      allow read: if true;
+    }
+    
+    // Test collection for debugging
+    match /test/{document=**} {
+      allow read, write: if true;
+    }
+  }
+}

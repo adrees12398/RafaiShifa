@@ -338,6 +338,32 @@ const PRODUCTS_CATALOG_DOC = 'products/catalog';
 // Uses debouncing to prevent rapid consecutive writes.
 let syncTimeout: NodeJS.Timeout | null = null;
 
+// Retry helper function
+async function retryOperation<T>(
+  operation: () => Promise<T>,
+  maxRetries: number = 3,
+  delayMs: number = 1000
+): Promise<T> {
+  let lastError: Error | null = null;
+  
+  for (let attempt = 1; attempt <= maxRetries; attempt++) {
+    try {
+      console.log(`🔄 Attempt ${attempt}/${maxRetries}...`);
+      return await operation();
+    } catch (e) {
+      lastError = e instanceof Error ? e : new Error(String(e));
+      console.warn(`⚠️ Attempt ${attempt} failed:`, lastError.message);
+      
+      if (attempt < maxRetries) {
+        console.log(`⏳ Waiting ${delayMs}ms before retry...`);
+        await new Promise(resolve => setTimeout(resolve, delayMs));
+      }
+    }
+  }
+  
+  throw lastError || new Error('All retry attempts failed');
+}
+
 export async function syncProductsToDb(products: Product[]): Promise<void> {
   // Cancel any pending sync
   if (syncTimeout) {
@@ -354,21 +380,30 @@ export async function syncProductsToDb(products: Product[]): Promise<void> {
           collection: PRODUCTS_CATALOG_DOC
         });
         
-        await withTimeout(
-          setDoc(doc(db, PRODUCTS_CATALOG_DOC), {
-            items: products,
-            updatedAt: serverTimestamp()
-          }),
-          30000
-        );
+        // Retry up to 3 times with 60 second timeout per attempt
+        await retryOperation(async () => {
+          return await withTimeout(
+            setDoc(doc(db, PRODUCTS_CATALOG_DOC), {
+              items: products,
+              updatedAt: serverTimestamp()
+            }),
+            60000
+          );
+        }, 3, 2000);
         
         console.log('✅ Products catalog synced to Firestore:', products.length);
         alert('✅ Products saved to Firestore successfully!');
         resolve();
       } catch (e) {
-        console.error('❌ Products sync to Firestore FAILED:', e);
+        console.error('❌ Products sync to Firestore FAILED after retries:', e);
         const errorMsg = e instanceof Error ? e.message : String(e);
-        alert(`❌ Firestore sync failed!\n\nError: ${errorMsg}\n\nProducts saved locally but NOT synced to cloud.`);
+        
+        // Check if it's a timeout issue
+        if (errorMsg.includes('timed out')) {
+          alert(`⚠️ Firestore sync timeout!\n\nProduct saved locally ✅\nCloud sync pending ⏳\n\nThe data will sync automatically when connection improves.`);
+        } else {
+          alert(`❌ Firestore sync failed!\n\nError: ${errorMsg}\n\nProducts saved locally but NOT synced to cloud.`);
+        }
         reject(e);
       }
     }, 500);
