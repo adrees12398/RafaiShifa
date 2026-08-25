@@ -331,12 +331,24 @@ export function saveStoredProducts(products: Product[]): void {
   syncProductsToDb(products);
 }
 
+// Write ONLY to localStorage. Used when data arrives FROM Firestore so the
+// snapshot handler never triggers another Firestore write (prevents loops).
+export function cacheProductsLocally(products: Product[]): void {
+  try {
+    localStorage.setItem(LOCAL_PRODUCTS_KEY, JSON.stringify(products));
+  } catch (e) {
+    console.error('Failed to cache products locally:', e);
+  }
+}
+
 // Cloud catalog doc for products (single document holds the full catalog).
 const PRODUCTS_CATALOG_DOC = 'products/catalog';
 
 // Push the whole catalog to Firestore so every browser/device stays in sync.
 // Uses debouncing to prevent rapid consecutive writes.
 let syncTimeout: NodeJS.Timeout | null = null;
+// JSON of the last successfully written catalog (echo-write guard)
+let lastSyncedProductsJson = '';
 
 // Retry helper function
 async function retryOperation<T>(
@@ -365,6 +377,13 @@ async function retryOperation<T>(
 }
 
 export async function syncProductsToDb(products: Product[]): Promise<void> {
+  // Skip if this exact catalog was just written (prevents echo write loops)
+  const outgoingJson = JSON.stringify(products);
+  if (outgoingJson === lastSyncedProductsJson) {
+    console.log('⏭️ Skipping sync - catalog unchanged since last write');
+    return;
+  }
+
   // Cancel any pending sync
   if (syncTimeout) {
     clearTimeout(syncTimeout);
@@ -390,20 +409,14 @@ export async function syncProductsToDb(products: Product[]): Promise<void> {
             60000
           );
         }, 3, 2000);
-        
+
+        lastSyncedProductsJson = outgoingJson;
         console.log('✅ Products catalog synced to Firestore:', products.length);
-        alert('✅ Products saved to Firestore successfully!');
         resolve();
       } catch (e) {
         console.error('❌ Products sync to Firestore FAILED after retries:', e);
         const errorMsg = e instanceof Error ? e.message : String(e);
-        
-        // Check if it's a timeout issue
-        if (errorMsg.includes('timed out')) {
-          alert(`⚠️ Firestore sync timeout!\n\nProduct saved locally ✅\nCloud sync pending ⏳\n\nThe data will sync automatically when connection improves.`);
-        } else {
-          alert(`❌ Firestore sync failed!\n\nError: ${errorMsg}\n\nProducts saved locally but NOT synced to cloud.`);
-        }
+        console.error('Sync error details:', errorMsg);
         reject(e);
       }
     }, 500);
@@ -439,7 +452,9 @@ export function subscribeProducts(onUpdate: (products: Product[]) => void): () =
           const isDifferent = JSON.stringify(repaired) !== JSON.stringify(currentLocal);
           
           if (isDifferent) {
-            saveStoredProducts(repaired);
+            // IMPORTANT: cache locally only - NEVER call saveStoredProducts here
+            // (it would write back to Firestore and cause an echo write loop)
+            cacheProductsLocally(repaired);
             onUpdate(repaired);
             console.log('✅ Products updated from Firestore:', repaired.length);
           } else {
