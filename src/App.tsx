@@ -16,10 +16,7 @@ import { TeamView } from './components/TeamView';
 import { AdminView } from './components/AdminView';
 import { CartModal } from './components/CartModal';
 import { ProductDetailModal } from './components/ProductDetailModal';
-<<<<<<< HEAD
-=======
 import { WhatsAppButton } from './components/WhatsAppButton';
->>>>>>> 403a50f (whatsapp add)
 
 export default function App() {
   const [activeTab, setActiveTab] = useState<NavTab>('home');
@@ -163,12 +160,9 @@ export default function App() {
         onAddToCart={handleAddToCart}
       />
 
-<<<<<<< HEAD
-=======
       {/* Floating WhatsApp Action Button */}
       <WhatsAppButton />
 
->>>>>>> 403a50f (whatsapp add)
     </div>
   );
 }
