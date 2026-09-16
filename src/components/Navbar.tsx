@@ -32,13 +32,16 @@ export const Navbar: React.FC<NavbarProps> = ({
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const navItems: { id: NavTab; label: string; urdu: string }[] = [
+  const baseNavItems: { id: NavTab; label: string; urdu: string }[] = [
     { id: 'home', label: 'Home', urdu: 'صفحہ اول' },
     { id: 'blog', label: 'Tib Blog & Remedies', urdu: 'طب و علاج' },
     { id: 'help', label: 'Help & FAQs', urdu: 'مدد و سوالات' },
     { id: 'team', label: 'About & Our Hakeems', urdu: 'ہمارے اطبا' },
-    { id: 'admin', label: 'Admin Dashboard', urdu: 'ایڈمن پینل' },
   ];
+
+  const navItems = isAdminLoggedIn
+    ? [...baseNavItems, { id: 'admin' as NavTab, label: 'Admin Dashboard', urdu: 'ایڈمن پینل' }]
+    : baseNavItems;
 
   const handleNavClick = (tab: NavTab) => {
     setActiveTab(tab);
@@ -141,25 +144,15 @@ export const Navbar: React.FC<NavbarProps> = ({
           {/* Right Action Icons */}
           <div className="flex items-center gap-1.5 sm:gap-3">
 
-            {/* Admin Key Button if not on admin tab */}
-            {activeTab !== 'admin' && (
+            {/* Admin Key Button - ONLY visible when admin is logged in */}
+            {isAdminLoggedIn && activeTab !== 'admin' && (
               <button
-                onClick={() => {
-                  if (isAdminLoggedIn) {
-                    setActiveTab('admin');
-                  } else {
-                    onOpenAdminModal();
-                  }
-                }}
-                className={`p-2 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors ${
-                  isAdminLoggedIn 
-                    ? 'bg-[#3F4633] text-[#A1A696] border border-[#A1A696]/40 hover:bg-[#2F3428]' 
-                    : 'text-[#A1A696] hover:text-white hover:bg-[#3F4633]'
-                }`}
-                title={isAdminLoggedIn ? "Admin Logged In" : "Admin Login"}
+                onClick={() => setActiveTab('admin')}
+                className="p-2 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-colors bg-[#3F4633] text-[#A1A696] border border-[#A1A696]/40 hover:bg-[#2F3428]"
+                title="Go to Admin Dashboard"
               >
                 <UserCheck className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
-                <span className="hidden xl:inline">{isAdminLoggedIn ? "Admin Active" : "Admin"}</span>
+                <span className="hidden xl:inline">Admin Active</span>
               </button>
             )}
 

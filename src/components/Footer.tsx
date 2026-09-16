@@ -128,11 +128,6 @@ export const Footer: React.FC<FooterProps> = ({ setActiveTab }) => {
                   Our Expert Hakeems & Medical Panel
                 </button>
               </li>
-              <li>
-                <button onClick={() => setActiveTab('admin')} className="hover:text-[#A1A696] transition-colors text-[#A1A696] font-semibold">
-                  Admin Dashboard Portal
-                </button>
-              </li>
             </ul>
           </div>
 

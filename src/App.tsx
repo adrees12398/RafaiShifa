@@ -19,12 +19,29 @@ import { ProductDetailModal } from './components/ProductDetailModal';
 import { WhatsAppButton } from './components/WhatsAppButton';
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<NavTab>('home');
+  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState<boolean>(() => {
+    try {
+      return sessionStorage.getItem('rafaishifa_admin_auth') === 'true';
+    } catch {
+      return false;
+    }
+  });
+
+  const [activeTab, setActiveTab] = useState<NavTab>(() => {
+    if (typeof window !== 'undefined') {
+      const search = window.location.search.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      const pathname = window.location.pathname.toLowerCase();
+      if (search.includes('admin') || hash.includes('admin') || pathname.startsWith('/admin')) {
+        return 'admin';
+      }
+    }
+    return 'home';
+  });
   const [products, setProducts] = useState<Product[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
-  const [isAdminLoggedIn, setIsAdminLoggedIn] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
 
   // Load Initial Products & Stored Cart, then sync catalog from Firestore
@@ -52,6 +69,47 @@ export default function App() {
       console.error('Cart save error:', e);
     }
   }, [cartItems]);
+
+  // Handle URL change triggers (e.g. ?admin, #admin, /admin)
+  useEffect(() => {
+    const handleUrlChange = () => {
+      const search = window.location.search.toLowerCase();
+      const hash = window.location.hash.toLowerCase();
+      const pathname = window.location.pathname.toLowerCase();
+      if (search.includes('admin') || hash.includes('admin') || pathname.startsWith('/admin')) {
+        setActiveTab('admin');
+      }
+    };
+    window.addEventListener('popstate', handleUrlChange);
+    window.addEventListener('hashchange', handleUrlChange);
+    return () => {
+      window.removeEventListener('popstate', handleUrlChange);
+      window.removeEventListener('hashchange', handleUrlChange);
+    };
+  }, []);
+
+  // Shortcut: Ctrl + Shift + A (or Cmd + Shift + A) to toggle admin panel
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.shiftKey && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        setActiveTab((prev) => (prev === 'admin' ? 'home' : 'admin'));
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, []);
+
+  const handleAdminLogout = () => {
+    setIsAdminLoggedIn(false);
+    setActiveTab('home');
+    try {
+      sessionStorage.removeItem('rafaishifa_admin_auth');
+      if (window.location.search.includes('admin') || window.location.hash.includes('admin') || window.location.pathname.startsWith('/admin')) {
+        window.history.replaceState(null, '', '/');
+      }
+    } catch {}
+  };
 
   // Cart Operations
   const handleAddToCart = (product: Product, quantity = 1) => {
@@ -131,6 +189,7 @@ export default function App() {
             setIsAdminLoggedIn={setIsAdminLoggedIn}
             products={products}
             setProducts={setProducts}
+            onLogout={handleAdminLogout}
           />
         )}
       </main>

@@ -47,13 +47,15 @@ interface AdminViewProps {
   setIsAdminLoggedIn: (val: boolean) => void;
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  onLogout?: () => void;
 }
 
 export const AdminView: React.FC<AdminViewProps> = ({
   isAdminLoggedIn,
   setIsAdminLoggedIn,
   products,
-  setProducts
+  setProducts,
+  onLogout
 }) => {
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
@@ -147,6 +149,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
     e.preventDefault();
     if (passwordInput === 'Admin123@') {
       setIsAdminLoggedIn(true);
+      try {
+        sessionStorage.setItem('rafaishifa_admin_auth', 'true');
+      } catch {}
       setLoginError('');
       setPasswordInput('');
     } else {
@@ -541,7 +546,13 @@ export const AdminView: React.FC<AdminViewProps> = ({
             )}
           </div>
           <button
-            onClick={() => setIsAdminLoggedIn(false)}
+            onClick={() => {
+              try {
+                sessionStorage.removeItem('rafaishifa_admin_auth');
+              } catch {}
+              setIsAdminLoggedIn(false);
+              if (onLogout) onLogout();
+            }}
             className="px-4 py-2 rounded-xl bg-[#3F4633] hover:bg-[#2F3428] text-white border border-[#A1A696]/40 text-xs font-bold flex items-center gap-2 transition-colors"
           >
             <LogOut className="w-4 h-4" />
