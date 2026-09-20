@@ -174,6 +174,7 @@ export default function App() {
             cartProductIds={cartProductIds}
             setActiveTab={setActiveTab}
             searchQuery={searchQuery}
+            setSearchQuery={setSearchQuery}
           />
         )}
 

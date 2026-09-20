@@ -11,7 +11,9 @@ import {
   ArrowRight, 
   Award, 
   PackageCheck, 
-  SlidersHorizontal 
+  SlidersHorizontal,
+  Search,
+  X
 } from 'lucide-react';
 
 interface HomeViewProps {
@@ -21,6 +23,7 @@ interface HomeViewProps {
   cartProductIds: string[];
   setActiveTab: (tab: NavTab) => void;
   searchQuery: string;
+  setSearchQuery: (q: string) => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -29,7 +32,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
   onQuickView,
   cartProductIds,
   setActiveTab,
-  searchQuery
+  searchQuery,
+  setSearchQuery
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
@@ -170,6 +174,92 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
       </section>
 
+      {/* Modern Search & Discovery Bar */}
+      <section id="search-bar-section" className="max-w-4xl mx-auto w-full px-2 sm:px-4">
+        <div className="relative group">
+          {/* Subtle Ambient Glow */}
+          <div className="absolute -inset-1 bg-gradient-to-r from-[#A1A696]/40 via-[#525A43]/30 to-[#A1A696]/40 rounded-3xl blur-md opacity-40 group-hover:opacity-75 transition duration-500 pointer-events-none" />
+
+          {/* Search Input Container */}
+          <div className="relative bg-white rounded-2xl sm:rounded-3xl border border-[#A1A696]/40 group-hover:border-[#525A43]/60 focus-within:border-[#525A43] focus-within:ring-4 focus-within:ring-[#525A43]/10 shadow-xl transition-all duration-300 p-2 sm:p-2.5 flex items-center gap-2 sm:gap-3">
+            {/* Search Icon */}
+            <div className="pl-3 sm:pl-4 text-[#525A43] flex items-center justify-center shrink-0">
+              <Search className="w-5 h-5 sm:w-6 sm:h-6 text-[#525A43]" />
+            </div>
+
+            {/* Input Field */}
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search authentic medicine (e.g. Kalonji, LiverBoost, زعفران, Joint pain)..."
+              className="flex-1 w-full bg-transparent text-xs sm:text-sm text-[#2F3428] placeholder-stone-400 font-medium focus:outline-none py-1.5 sm:py-2"
+              aria-label="Search herbal products"
+            />
+
+            {/* Clear Button */}
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="p-1 sm:p-1.5 rounded-full hover:bg-stone-100 text-stone-400 hover:text-[#2F3428] transition-colors shrink-0"
+                title="Clear search"
+                aria-label="Clear search input"
+              >
+                <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            )}
+
+            {/* Search Action CTA */}
+            <a
+              href="#products-section"
+              className="px-4 sm:px-6 py-2 sm:py-2.5 rounded-xl sm:rounded-2xl bg-[#525A43] hover:bg-[#3F4633] text-white font-bold text-xs sm:text-sm shadow-md transition-all active:scale-95 flex items-center gap-2 shrink-0"
+            >
+              <span>Explore</span>
+              <ArrowRight className="w-3.5 h-3.5 sm:w-4 sm:h-4 hidden sm:inline" />
+            </a>
+          </div>
+        </div>
+
+        {/* Popular Trending Searches Chips */}
+        <div className="mt-3 flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
+          <span className="text-[11px] font-bold text-[#525A43] shrink-0 font-serif flex items-center gap-1">
+            <Sparkles className="w-3 h-3 text-[#A1A696]" />
+            <span>Popular:</span>
+          </span>
+          {['LiverBoost', 'SlimAura', 'Zafran', 'Kalonji', 'Tilla-e-Azam', 'Growmax'].map((keyword) => {
+            const isSelected = searchQuery.toLowerCase() === keyword.toLowerCase();
+            return (
+              <button
+                key={keyword}
+                onClick={() => {
+                  setSearchQuery(isSelected ? '' : keyword);
+                  if (!isSelected) {
+                    setSelectedCategory('All');
+                  }
+                  const el = document.getElementById('products-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 border ${
+                  isSelected
+                    ? 'bg-[#525A43] text-white border-[#525A43] shadow-sm'
+                    : 'bg-white hover:bg-stone-50 text-[#2F3428] border-stone-200'
+                }`}
+              >
+                {keyword}
+              </button>
+            );
+          })}
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery('')}
+              className="px-2.5 py-1 rounded-full text-[10px] font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors shrink-0 border border-red-200"
+            >
+              Reset ✕
+            </button>
+          )}
+        </div>
+      </section>
+
       {/* Prophetic Hadith Banner */}
       <section className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-6 border border-[#A1A696]/40 text-center max-w-4xl mx-auto shadow-sm">
         <div className="flex items-center justify-center gap-1.5 sm:gap-2 text-[#525A43] font-serif font-bold text-xs sm:text-sm mb-2">
@@ -196,6 +286,22 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <p className="text-xs text-stone-600 mt-1">
               Explore pure Unani compounds, prophetic oils, and natural health supplements.
             </p>
+            {searchQuery && (
+              <div className="flex items-center gap-2 mt-2">
+                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#525A43]/10 text-[#525A43] border border-[#525A43]/20">
+                  <Search className="w-3 h-3" />
+                  <span>Found {filteredProducts.length} result{filteredProducts.length === 1 ? '' : 's'} for &ldquo;{searchQuery}&rdquo;</span>
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="ml-1 p-0.5 hover:bg-[#525A43]/20 rounded-full transition-colors"
+                    aria-label="Clear active search"
+                    title="Clear search"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
+                </span>
+              </div>
+            )}
           </div>
 
           {/* Sort Dropdown */}
@@ -238,15 +344,20 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div className="w-16 h-16 mx-auto rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
               <Leaf className="w-8 h-8" />
             </div>
-            <h3 className="text-base font-bold text-[#2F3428]">No products found</h3>
+            <h3 className="text-base font-bold text-[#2F3428]">
+              {searchQuery ? `No products matching "${searchQuery}"` : 'No products found'}
+            </h3>
             <p className="text-xs text-stone-500 max-w-xs mx-auto">
-              Try resetting your search query or selecting a different category.
+              {searchQuery
+                ? 'Try checking for typos, using general terms, or explore our popular remedies above.'
+                : 'Try resetting your search query or selecting a different category.'}
             </p>
             <button
               onClick={() => {
                 setSelectedCategory('All');
+                setSearchQuery('');
               }}
-              className="mt-2 px-4 py-2 rounded-xl bg-[#525A43] text-white text-xs font-bold"
+              className="mt-2 px-4 py-2 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white text-xs font-bold transition-colors shadow-sm"
             >
               Show All Products
             </button>
