@@ -13,8 +13,88 @@ import {
   PackageCheck, 
   SlidersHorizontal,
   Search,
-  X
+  X,
+  Folder,
+  FolderOpen,
+  FolderArchive,
+  Layers,
+  Activity,
+  Check
 } from 'lucide-react';
+
+export interface CategoryFolderInfo {
+  id: string;
+  name: string;
+  urduName: string;
+  folderType: string;
+  folderTypeUrdu: string;
+  badge: string;
+  description: string;
+  focusArea: string;
+}
+
+export const PREDEFINED_CATEGORY_FOLDERS: Record<string, CategoryFolderInfo> = {
+  'All': {
+    id: 'all',
+    name: 'All',
+    urduName: 'تمام ادویات کا مرکزی فولڈر',
+    folderType: 'Master Catalog Archive (مرکزی مجموعہ)',
+    folderTypeUrdu: 'مرکزی طبی مجموعہ',
+    badge: 'Master Archive',
+    description: 'Master directory containing every authenticated Unani remedy, prophetic formula, and herbal oil in the store.',
+    focusArea: 'Full store inventory & comprehensive holistic healthcare'
+  },
+  'Tib-e-Nabvi Special': {
+    id: 'tib-e-nabvi',
+    name: 'Tib-e-Nabvi Special',
+    urduName: 'طبِ نبوی خاص',
+    folderType: 'Prophetic Medicine & Sunnah Formulations (نبوی و اسلامی طریقہ علاج)',
+    folderTypeUrdu: 'سنتِ نبوی و اسلامی علاج',
+    badge: 'Prophetic Cures',
+    description: 'Pure cold-pressed Kalonji oil, Sidr honey blends, Talbina, and classical prophetic remedies.',
+    focusArea: 'Immune revival, respiratory relief & prophetic sunnah cures'
+  },
+  'Heart & Digestion': {
+    id: 'heart-digestion',
+    name: 'Heart & Digestion',
+    urduName: 'امراضِ قلب و معدہ',
+    folderType: 'Cardiovascular & Gastrointestinal Care (ہاضمہ، جگر اور امراضِ قلب)',
+    folderTypeUrdu: 'ہاضمہ، جگر و امراضِ قلب',
+    badge: 'Internal Health',
+    description: 'LiverBoost, Gestrocare syrups, digestive enzyme formulas, and natural heart circulation tonics.',
+    focusArea: 'Fatty liver, acidity, cholesterol, gastric relief & vascular circulation'
+  },
+  'Immunity & Daily Wellness': {
+    id: 'immunity-wellness',
+    name: 'Immunity & Daily Wellness',
+    urduName: 'قوتِ مدافعت و عمومی صحت',
+    folderType: 'Immune Defense & Vitality Restoration (قوتِ مدافعت و بحالیِ توانائی)',
+    folderTypeUrdu: 'قوتِ مدافعت و بحالیِ توانائی',
+    badge: 'Vitality Tonic',
+    description: 'Herbal multivitamins, natural stamina tonics, and restorative compounds for daily energy and physical vitality.',
+    focusArea: 'Daily stamina, physical weakness, fatigue & natural immune defense'
+  },
+  'Joint Care & Oils': {
+    id: 'joint-care',
+    name: 'Joint Care & Oils',
+    urduName: 'جوڑوں کے امراض و روغنیات',
+    folderType: 'Musculoskeletal Therapy & Pain Relief (جوڑوں، اعصاب و درد کش روغنیات)',
+    folderTypeUrdu: 'جوڑوں، اعصاب و درد کش روغنیات',
+    badge: 'Pain Relief',
+    description: 'Roghan-e-Balsan, Zafrani oils, and warming herbal liniments for joint flexibility, arthritis, and nerves.',
+    focusArea: 'Arthritis, back pain, sciatica, knee stiffness & nerve soothing'
+  },
+  'Herbal Teas & Extracts': {
+    id: 'teas-extracts',
+    name: 'Herbal Teas & Extracts',
+    urduName: 'ہربل چائے و عرقیات',
+    folderType: 'Botanical Decoctions & Pure Distillates (خالص عرقیات، ہربل قہوہ و جوشاندہ)',
+    folderTypeUrdu: 'خالص عرقیات و ہربل قہوہ',
+    badge: 'Pure Extracts',
+    description: 'SlimAura botanical teas, detox infusions, and traditionally hydro-distilled pure botanical essences.',
+    focusArea: 'Weight management, metabolic detox & deep organic cleansing'
+  }
+};
 
 interface HomeViewProps {
   products: Product[];
@@ -38,14 +118,47 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
 
-  const categories = [
+  const baseCategoryNames = [
     'All',
     'Tib-e-Nabvi Special',
-    'Immunity & Daily Wellness',
     'Heart & Digestion',
+    'Immunity & Daily Wellness',
     'Joint Care & Oils',
     'Herbal Teas & Extracts'
   ];
+
+  const customCategories = Array.from(
+    new Set(products.map((p) => p.category).filter((c) => c && !baseCategoryNames.includes(c)))
+  );
+
+  const categories = [...baseCategoryNames, ...customCategories];
+
+  const categoryFolders: CategoryFolderInfo[] = categories.map((cat) => {
+    if (PREDEFINED_CATEGORY_FOLDERS[cat]) {
+      return PREDEFINED_CATEGORY_FOLDERS[cat];
+    }
+    return {
+      id: cat.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+      name: cat,
+      urduName: 'خصوصی طبی زمرہ',
+      folderType: `Specialized Herbal Formulation (${cat})`,
+      folderTypeUrdu: 'خصوصی طبی شعبہ',
+      badge: 'Custom Category',
+      description: `Specialized herbal preparations and remedies filed under ${cat}.`,
+      focusArea: 'Targeted wellness and specialized treatment'
+    };
+  });
+
+  const activeFolder = PREDEFINED_CATEGORY_FOLDERS[selectedCategory] || {
+    id: selectedCategory.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    name: selectedCategory,
+    urduName: 'خصوصی طبی زمرہ',
+    folderType: `Specialized Herbal Formulation (${selectedCategory})`,
+    folderTypeUrdu: 'خصوصی طبی شعبہ',
+    badge: 'Category Folder',
+    description: `Specialized herbal preparations filed under ${selectedCategory}.`,
+    focusArea: 'Targeted wellness and specialized treatment'
+  };
 
   // Filtering & Sorting
   const filteredProducts = products.filter((p) => {
@@ -275,16 +388,212 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </p>
       </section>
 
+      {/* Interactive Category Folders Section */}
+      <section id="category-folders-section" className="space-y-6 pt-2">
+        
+        {/* Section Header */}
+        <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-stone-200 pb-4">
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#525A43]/10 text-[#525A43] text-xs font-bold mb-2">
+              <Folder className="w-3.5 h-3.5 text-[#525A43]" />
+              <span>Medical Categories & Folders | طبی زمرہ جات</span>
+            </div>
+            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#2F3428] tracking-tight font-serif">
+              Browse by Category Folders
+            </h2>
+            <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl">
+              Each folder represents a distinct therapeutic branch of Unani &amp; Prophetic medicine. Open any folder to explore its remedies, clinical classification, and ingredients.
+            </p>
+          </div>
+
+          {/* Reset / All Folders Shortcut */}
+          {selectedCategory !== 'All' && (
+            <button
+              onClick={() => {
+                setSelectedCategory('All');
+                const el = document.getElementById('products-section');
+                if (el) el.scrollIntoView({ behavior: 'smooth' });
+              }}
+              className="self-start sm:self-auto px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-2 transition-all border border-stone-300 shadow-2xs cursor-pointer"
+            >
+              <FolderArchive className="w-4 h-4 text-[#525A43]" />
+              <span>Show All Folders ({products.length})</span>
+            </button>
+          )}
+        </div>
+
+        {/* Folders Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 pt-1">
+          {categoryFolders.map((folder) => {
+            const isSelected = selectedCategory === folder.name;
+            const count = folder.name === 'All' 
+              ? products.length 
+              : products.filter(p => p.category === folder.name).length;
+
+            return (
+              <div
+                key={folder.name}
+                onClick={() => {
+                  setSelectedCategory(folder.name);
+                  const el = document.getElementById('products-section');
+                  if (el) el.scrollIntoView({ behavior: 'smooth' });
+                }}
+                className="group relative text-left cursor-pointer transition-all duration-300 transform hover:-translate-y-1 flex flex-col"
+              >
+                {/* Physical Folder Tab Flap on Top */}
+                <div className="flex items-end">
+                  <div className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-t-2xl text-[11px] font-extrabold flex items-center gap-2 border-t-2 border-x-2 transition-all ${
+                    isSelected
+                      ? 'bg-[#525A43] text-white border-[#525A43] shadow-sm'
+                      : 'bg-[#dedfd9] text-[#2F3428] border-stone-300 group-hover:bg-[#A1A696]/30'
+                  }`}>
+                    {isSelected ? (
+                      <FolderOpen className="w-4 h-4 text-[#A1A696]" />
+                    ) : (
+                      <Folder className="w-4 h-4 text-[#525A43]" />
+                    )}
+                    <span className="uppercase tracking-wider font-mono text-[10px] sm:text-[11px]">
+                      {folder.badge}
+                    </span>
+                  </div>
+                  
+                  {/* Folder Tab Notch Transition */}
+                  <div className={`h-2 flex-1 border-b-2 transition-colors ${
+                    isSelected ? 'border-[#525A43]' : 'border-stone-200'
+                  }`} />
+                </div>
+
+                {/* Main Folder Body */}
+                <div className={`p-5 sm:p-6 rounded-b-3xl rounded-tr-3xl border-2 transition-all flex flex-col justify-between flex-1 space-y-4 shadow-sm ${
+                  isSelected
+                    ? 'bg-white border-[#525A43] ring-4 ring-[#525A43]/10 shadow-xl'
+                    : 'bg-white border-stone-200 group-hover:border-[#A1A696] group-hover:shadow-md'
+                }`}>
+                  
+                  {/* Folder Title & Remedies Count */}
+                  <div className="space-y-3">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="min-w-0">
+                        <h3 className={`text-base sm:text-lg font-bold font-serif leading-tight transition-colors ${
+                          isSelected ? 'text-[#525A43]' : 'text-[#2F3428] group-hover:text-[#525A43]'
+                        }`}>
+                          {folder.name === 'All' ? 'All Herbal Categories' : folder.name}
+                        </h3>
+                        <div className="text-xs font-serif font-semibold text-[#525A43] mt-0.5">
+                          {folder.urduName}
+                        </div>
+                      </div>
+
+                      {/* Remedies Count Badge */}
+                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 font-mono ${
+                        count > 0 
+                          ? 'bg-[#A1A696]/20 text-[#525A43] border border-[#A1A696]/40' 
+                          : 'bg-stone-100 text-stone-400'
+                      }`}>
+                        {count} {count === 1 ? 'Remedy' : 'Remedies'}
+                      </span>
+                    </div>
+
+                    {/* Prominent "Which Type of Folder is it" Callout Box */}
+                    <div className={`p-3 sm:p-3.5 rounded-xl border transition-all ${
+                      isSelected 
+                        ? 'bg-[#525A43]/10 border-[#525A43]/30' 
+                        : 'bg-[#F9F9F6] border-[#A1A696]/20 group-hover:border-[#A1A696]/40'
+                    }`}>
+                      <div className="flex items-center justify-between text-[10px] text-[#525A43] font-bold uppercase tracking-wider mb-1">
+                        <span className="flex items-center gap-1.5">
+                          <Layers className="w-3.5 h-3.5 text-[#525A43]" />
+                          <span>Which Type of Folder is it:</span>
+                        </span>
+                        <span className="font-serif normal-case text-stone-500 text-[10px]">{folder.folderTypeUrdu}</span>
+                      </div>
+                      <div className="text-xs sm:text-sm font-extrabold text-[#2F3428] leading-snug">
+                        {folder.folderType}
+                      </div>
+                    </div>
+
+                    {/* Description */}
+                    <p className="text-xs text-stone-600 leading-relaxed">
+                      {folder.description}
+                    </p>
+
+                    {/* Focus Area Pill */}
+                    <div className="text-[11px] text-[#525A43] bg-stone-50 px-2.5 py-1.5 rounded-lg border border-stone-100 flex items-start gap-1.5">
+                      <span className="font-bold shrink-0">Focus:</span>
+                      <span className="text-stone-700 leading-tight">{folder.focusArea}</span>
+                    </div>
+                  </div>
+
+                  {/* Folder Status / Open Action */}
+                  <div className="pt-2 border-t border-stone-100">
+                    {isSelected ? (
+                      <div className="w-full py-2.5 px-4 rounded-xl bg-[#525A43] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
+                        <FolderOpen className="w-4 h-4 text-[#A1A696]" />
+                        <span>Folder is Open &amp; Active</span>
+                        <Check className="w-4 h-4 text-[#A1A696]" />
+                      </div>
+                    ) : (
+                      <div className="w-full py-2.5 px-4 rounded-xl bg-stone-100 group-hover:bg-[#525A43] text-[#2F3428] group-hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition-all">
+                        <Folder className="w-4 h-4" />
+                        <span>Open Folder</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                      </div>
+                    )}
+                  </div>
+
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+      </section>
+
       {/* Catalog Products Section */}
       <section id="products-section" className="space-y-6 pt-4">
         
+        {/* Active Folder Header Banner */}
+        <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border-2 border-[#525A43]/30 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+          <div className="flex items-start sm:items-center gap-3">
+            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#525A43] text-[#A1A696] flex items-center justify-center shadow-sm shrink-0">
+              <FolderOpen className="w-5 h-5 sm:w-6 sm:h-6" />
+            </div>
+            <div>
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#A1A696]/20 text-[#525A43] border border-[#A1A696]/40">
+                  Folder Type: {activeFolder.folderType}
+                </span>
+                <span className="text-xs text-stone-500 font-serif">
+                  ({activeFolder.urduName})
+                </span>
+              </div>
+              <h3 className="text-base sm:text-lg font-bold font-serif text-[#2F3428] mt-1">
+                Currently Opened Folder: <span className="text-[#525A43] font-black">{activeFolder.name === 'All' ? 'All Herbal Categories' : activeFolder.name}</span>
+                <span className="text-xs font-normal text-stone-500 ml-2">
+                  ({filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'} found)
+                </span>
+              </h3>
+            </div>
+          </div>
+
+          {selectedCategory !== 'All' && (
+            <button
+              onClick={() => setSelectedCategory('All')}
+              className="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-1.5 transition-colors border border-stone-300 shrink-0 cursor-pointer"
+            >
+              <FolderArchive className="w-3.5 h-3.5 text-[#525A43]" />
+              <span>Show All Folders</span>
+            </button>
+          )}
+        </div>
+
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-stone-200 pb-4">
           <div>
-            <h2 className="text-2xl sm:text-3xl font-extrabold text-[#2F3428] tracking-tight font-serif">
-              Our Herbal Products & Remedies
+            <h2 className="text-xl sm:text-2xl font-extrabold text-[#2F3428] tracking-tight font-serif">
+              Products in this Category
             </h2>
             <p className="text-xs text-stone-600 mt-1">
-              Explore pure Unani compounds, prophetic oils, and natural health supplements.
+              Pure Unani compounds, prophetic oils, and natural health supplements inside this folder.
             </p>
             {searchQuery && (
               <div className="flex items-center gap-2 mt-2">
@@ -321,21 +630,35 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
 
-        {/* Category Pill Filters */}
+        {/* Category Quick Pill Filters */}
         <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {categories.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
-                selectedCategory === cat
-                  ? 'bg-[#525A43] text-white shadow-md border border-[#A1A696]'
-                  : 'bg-white text-[#2F3428] hover:bg-stone-100 border border-stone-200'
-              }`}
-            >
-              {cat}
-            </button>
-          ))}
+          {categories.map((cat) => {
+            const isCatSelected = selectedCategory === cat;
+            const catCount = cat === 'All' ? products.length : products.filter(p => p.category === cat).length;
+            return (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
+                  isCatSelected
+                    ? 'bg-[#525A43] text-white shadow-md border border-[#A1A696]'
+                    : 'bg-white text-[#2F3428] hover:bg-stone-100 border border-stone-200'
+                }`}
+              >
+                {isCatSelected ? (
+                  <FolderOpen className="w-3.5 h-3.5 text-[#A1A696]" />
+                ) : (
+                  <Folder className="w-3.5 h-3.5 text-stone-400" />
+                )}
+                <span>{cat}</span>
+                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
+                  isCatSelected ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-500'
+                }`}>
+                  {catCount}
+                </span>
+              </button>
+            );
+          })}
         </div>
 
         {/* Products Grid */}
