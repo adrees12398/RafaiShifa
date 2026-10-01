@@ -31,18 +31,20 @@ export interface CategoryFolderInfo {
   badge: string;
   description: string;
   focusArea: string;
+  imageUrl: string;
 }
 
 export const PREDEFINED_CATEGORY_FOLDERS: Record<string, CategoryFolderInfo> = {
   'All': {
     id: 'all',
     name: 'All',
-    urduName: 'تمام ادویات کا مرکزی فولڈر',
+    urduName: 'تمام ادویات کا مجموعہ',
     folderType: 'Master Catalog Archive (مرکزی مجموعہ)',
     folderTypeUrdu: 'مرکزی طبی مجموعہ',
-    badge: 'Master Archive',
+    badge: 'Master Collection',
     description: 'Master directory containing every authenticated Unani remedy, prophetic formula, and herbal oil in the store.',
-    focusArea: 'Full store inventory & comprehensive holistic healthcare'
+    focusArea: 'Full store inventory & comprehensive holistic healthcare',
+    imageUrl: 'https://images.unsplash.com/photo-1540420773420-3366772f4999?auto=format&fit=crop&w=600&q=80'
   },
   'Tib-e-Nabvi Special': {
     id: 'tib-e-nabvi',
@@ -52,7 +54,8 @@ export const PREDEFINED_CATEGORY_FOLDERS: Record<string, CategoryFolderInfo> = {
     folderTypeUrdu: 'سنتِ نبوی و اسلامی علاج',
     badge: 'Prophetic Cures',
     description: 'Pure cold-pressed Kalonji oil, Sidr honey blends, Talbina, and classical prophetic remedies.',
-    focusArea: 'Immune revival, respiratory relief & prophetic sunnah cures'
+    focusArea: 'Immune revival, respiratory relief & prophetic sunnah cures',
+    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=600&q=80'
   },
   'Heart & Digestion': {
     id: 'heart-digestion',
@@ -62,7 +65,8 @@ export const PREDEFINED_CATEGORY_FOLDERS: Record<string, CategoryFolderInfo> = {
     folderTypeUrdu: 'ہاضمہ، جگر و امراضِ قلب',
     badge: 'Internal Health',
     description: 'LiverBoost, Gestrocare syrups, digestive enzyme formulas, and natural heart circulation tonics.',
-    focusArea: 'Fatty liver, acidity, cholesterol, gastric relief & vascular circulation'
+    focusArea: 'Fatty liver, acidity, cholesterol, gastric relief & vascular circulation',
+    imageUrl: '/products/LiverBoost.jpeg'
   },
   'Immunity & Daily Wellness': {
     id: 'immunity-wellness',
@@ -72,7 +76,8 @@ export const PREDEFINED_CATEGORY_FOLDERS: Record<string, CategoryFolderInfo> = {
     folderTypeUrdu: 'قوتِ مدافعت و بحالیِ توانائی',
     badge: 'Vitality Tonic',
     description: 'Herbal multivitamins, natural stamina tonics, and restorative compounds for daily energy and physical vitality.',
-    focusArea: 'Daily stamina, physical weakness, fatigue & natural immune defense'
+    focusArea: 'Daily stamina, physical weakness, fatigue & natural immune defense',
+    imageUrl: '/products/jawahri.jpeg'
   },
   'Joint Care & Oils': {
     id: 'joint-care',
@@ -82,7 +87,8 @@ export const PREDEFINED_CATEGORY_FOLDERS: Record<string, CategoryFolderInfo> = {
     folderTypeUrdu: 'جوڑوں، اعصاب و درد کش روغنیات',
     badge: 'Pain Relief',
     description: 'Roghan-e-Balsan, Zafrani oils, and warming herbal liniments for joint flexibility, arthritis, and nerves.',
-    focusArea: 'Arthritis, back pain, sciatica, knee stiffness & nerve soothing'
+    focusArea: 'Arthritis, back pain, sciatica, knee stiffness & nerve soothing',
+    imageUrl: '/products/zafrani.jpeg'
   },
   'Herbal Teas & Extracts': {
     id: 'teas-extracts',
@@ -92,7 +98,8 @@ export const PREDEFINED_CATEGORY_FOLDERS: Record<string, CategoryFolderInfo> = {
     folderTypeUrdu: 'خالص عرقیات و ہربل قہوہ',
     badge: 'Pure Extracts',
     description: 'SlimAura botanical teas, detox infusions, and traditionally hydro-distilled pure botanical essences.',
-    focusArea: 'Weight management, metabolic detox & deep organic cleansing'
+    focusArea: 'Weight management, metabolic detox & deep organic cleansing',
+    imageUrl: '/products/SlimAura.jpeg'
   }
 };
 
@@ -145,7 +152,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
       folderTypeUrdu: 'خصوصی طبی شعبہ',
       badge: 'Custom Category',
       description: `Specialized herbal preparations and remedies filed under ${cat}.`,
-      focusArea: 'Targeted wellness and specialized treatment'
+      focusArea: 'Targeted wellness and specialized treatment',
+      imageUrl: '/products/growmax.jpeg'
     };
   });
 
@@ -157,7 +165,8 @@ export const HomeView: React.FC<HomeViewProps> = ({
     folderTypeUrdu: 'خصوصی طبی شعبہ',
     badge: 'Category Folder',
     description: `Specialized herbal preparations filed under ${selectedCategory}.`,
-    focusArea: 'Targeted wellness and specialized treatment'
+    focusArea: 'Targeted wellness and specialized treatment',
+    imageUrl: '/products/growmax.jpeg'
   };
 
   // Filtering & Sorting
@@ -371,6 +380,74 @@ export const HomeView: React.FC<HomeViewProps> = ({
             </button>
           )}
         </div>
+
+        {/* Pansaar-Style Quick Category Circles Bar (App-Style Story Avatars) */}
+        <div className="mt-4 bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-[#A1A696]/30 shadow-sm">
+          <div className="flex items-center justify-between mb-2 px-1">
+            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#525A43] font-serif flex items-center gap-1.5">
+              <Sparkles className="w-3.5 h-3.5 text-[#A1A696]" />
+              <span>Shop by Category (کیٹیگری منتخب کریں)</span>
+            </span>
+            <span className="text-[10px] text-stone-500 font-sans hidden sm:inline">Tap to filter remedies</span>
+          </div>
+
+          <div className="flex items-start gap-3 sm:gap-5 overflow-x-auto pb-1.5 scrollbar-none pt-1">
+            {categoryFolders.map((folder) => {
+              const isSelected = selectedCategory === folder.name;
+              const count = folder.name === 'All' 
+                ? products.length 
+                : products.filter(p => p.category === folder.name).length;
+
+              return (
+                <button
+                  key={folder.name}
+                  onClick={() => {
+                    setSelectedCategory(folder.name);
+                    const el = document.getElementById('products-section');
+                    if (el) el.scrollIntoView({ behavior: 'smooth' });
+                  }}
+                  className="group flex flex-col items-center text-center shrink-0 w-20 sm:w-24 cursor-pointer focus:outline-none transition-all"
+                >
+                  {/* Round Category Avatar with Ring */}
+                  <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 transition-all duration-300 ${
+                    isSelected 
+                      ? 'ring-3 ring-[#525A43] ring-offset-2 scale-105 shadow-md bg-[#525A43]/15' 
+                      : 'ring-1.5 ring-stone-200 group-hover:ring-[#A1A696] group-hover:scale-105 bg-stone-50'
+                  }`}>
+                    <img
+                      src={folder.imageUrl}
+                      alt={folder.name}
+                      className="w-full h-full rounded-full object-cover bg-stone-100"
+                      onError={(e) => {
+                        e.currentTarget.src = '/products/LiverBoost.jpeg';
+                      }}
+                    />
+                    {isSelected && (
+                      <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#525A43] text-white flex items-center justify-center text-[9px] shadow-sm border border-white font-bold">
+                        ✓
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Title & Badge */}
+                  <span className={`mt-1.5 text-[11px] font-bold leading-tight line-clamp-1 transition-colors ${
+                    isSelected ? 'text-[#525A43]' : 'text-[#2F3428] group-hover:text-[#525A43]'
+                  }`}>
+                    {folder.name === 'All' ? 'All' : folder.name}
+                  </span>
+                  <span className="text-[9px] text-stone-500 font-serif leading-none mt-0.5 truncate w-full">
+                    {folder.urduName}
+                  </span>
+                  <span className={`mt-1 text-[8px] px-1.5 py-0.2 rounded-full font-mono ${
+                    isSelected ? 'bg-[#525A43] text-white' : 'bg-stone-100 text-stone-500'
+                  }`}>
+                    {count} {count === 1 ? 'item' : 'items'}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </section>
 
       {/* Prophetic Hadith Banner */}
@@ -388,25 +465,25 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </p>
       </section>
 
-      {/* Interactive Category Folders Section */}
+      {/* Pansaar-Style Visual Category Collections Showcase */}
       <section id="category-folders-section" className="space-y-6 pt-2">
         
         {/* Section Header */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-3 border-b border-stone-200 pb-4">
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#525A43]/10 text-[#525A43] text-xs font-bold mb-2">
-              <Folder className="w-3.5 h-3.5 text-[#525A43]" />
-              <span>Medical Categories & Folders | طبی زمرہ جات</span>
+              <Sparkles className="w-3.5 h-3.5 text-[#525A43]" />
+              <span>Explore Collections | طبی زمرہ جات</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#2F3428] tracking-tight font-serif">
-              Browse by Category Folders
+              Shop by Category
             </h2>
             <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl">
-              Each folder represents a distinct therapeutic branch of Unani &amp; Prophetic medicine. Open any folder to explore its remedies, clinical classification, and ingredients.
+              Authentic Unani and Tib-e-Nabvi remedies categorized by formulation type and health target. Tap any category to view remedies.
             </p>
           </div>
 
-          {/* Reset / All Folders Shortcut */}
+          {/* Reset / All Categories Shortcut */}
           {selectedCategory !== 'All' && (
             <button
               onClick={() => {
@@ -417,12 +494,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
               className="self-start sm:self-auto px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-2 transition-all border border-stone-300 shadow-2xs cursor-pointer"
             >
               <FolderArchive className="w-4 h-4 text-[#525A43]" />
-              <span>Show All Folders ({products.length})</span>
+              <span>View All Categories ({products.length})</span>
             </button>
           )}
         </div>
 
-        {/* Folders Grid */}
+        {/* Pansaar-Style Category Cards Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6 pt-1">
           {categoryFolders.map((folder) => {
             const isSelected = selectedCategory === folder.name;
@@ -438,105 +515,88 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   const el = document.getElementById('products-section');
                   if (el) el.scrollIntoView({ behavior: 'smooth' });
                 }}
-                className="group relative text-left cursor-pointer transition-all duration-300 transform hover:-translate-y-1 flex flex-col"
+                className={`group relative bg-white rounded-2xl sm:rounded-3xl overflow-hidden border-2 transition-all duration-300 cursor-pointer flex flex-col justify-between hover:shadow-xl transform hover:-translate-y-1 ${
+                  isSelected 
+                    ? 'border-[#525A43] ring-4 ring-[#525A43]/10 shadow-lg' 
+                    : 'border-stone-200 hover:border-[#A1A696]'
+                }`}
               >
-                {/* Physical Folder Tab Flap on Top */}
-                <div className="flex items-end">
-                  <div className={`px-4 sm:px-5 py-1.5 sm:py-2 rounded-t-2xl text-[11px] font-extrabold flex items-center gap-2 border-t-2 border-x-2 transition-all ${
-                    isSelected
-                      ? 'bg-[#525A43] text-white border-[#525A43] shadow-sm'
-                      : 'bg-[#dedfd9] text-[#2F3428] border-stone-300 group-hover:bg-[#A1A696]/30'
-                  }`}>
-                    {isSelected ? (
-                      <FolderOpen className="w-4 h-4 text-[#A1A696]" />
-                    ) : (
-                      <Folder className="w-4 h-4 text-[#525A43]" />
-                    )}
-                    <span className="uppercase tracking-wider font-mono text-[10px] sm:text-[11px]">
-                      {folder.badge}
-                    </span>
-                  </div>
+                {/* Visual Image Header (Pansaar Store Look) */}
+                <div className="relative h-44 sm:h-48 overflow-hidden bg-stone-100">
+                  <img
+                    src={folder.imageUrl}
+                    alt={folder.name}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    onError={(e) => {
+                      e.currentTarget.src = '/products/LiverBoost.jpeg';
+                    }}
+                  />
                   
-                  {/* Folder Tab Notch Transition */}
-                  <div className={`h-2 flex-1 border-b-2 transition-colors ${
-                    isSelected ? 'border-[#525A43]' : 'border-stone-200'
-                  }`} />
-                </div>
-
-                {/* Main Folder Body */}
-                <div className={`p-5 sm:p-6 rounded-b-3xl rounded-tr-3xl border-2 transition-all flex flex-col justify-between flex-1 space-y-4 shadow-sm ${
-                  isSelected
-                    ? 'bg-white border-[#525A43] ring-4 ring-[#525A43]/10 shadow-xl'
-                    : 'bg-white border-stone-200 group-hover:border-[#A1A696] group-hover:shadow-md'
-                }`}>
-                  
-                  {/* Folder Title & Remedies Count */}
-                  <div className="space-y-3">
-                    <div className="flex items-start justify-between gap-2">
-                      <div className="min-w-0">
-                        <h3 className={`text-base sm:text-lg font-bold font-serif leading-tight transition-colors ${
-                          isSelected ? 'text-[#525A43]' : 'text-[#2F3428] group-hover:text-[#525A43]'
-                        }`}>
-                          {folder.name === 'All' ? 'All Herbal Categories' : folder.name}
-                        </h3>
-                        <div className="text-xs font-serif font-semibold text-[#525A43] mt-0.5">
-                          {folder.urduName}
-                        </div>
-                      </div>
-
-                      {/* Remedies Count Badge */}
-                      <span className={`px-2.5 py-1 rounded-full text-[10px] font-bold shrink-0 font-mono ${
-                        count > 0 
-                          ? 'bg-[#A1A696]/20 text-[#525A43] border border-[#A1A696]/40' 
-                          : 'bg-stone-100 text-stone-400'
-                      }`}>
+                  {/* Dark Gradient Overlay for Crisp Text Contrast */}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex flex-col justify-between p-4 sm:p-5 text-white">
+                    <div className="flex items-center justify-between">
+                      <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/95 text-[#2F3428] backdrop-blur-md shadow-sm">
+                        {folder.badge}
+                      </span>
+                      <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#525A43]/90 text-white backdrop-blur-md font-mono border border-white/20">
                         {count} {count === 1 ? 'Remedy' : 'Remedies'}
                       </span>
                     </div>
 
-                    {/* Prominent "Which Type of Folder is it" Callout Box */}
-                    <div className={`p-3 sm:p-3.5 rounded-xl border transition-all ${
-                      isSelected 
-                        ? 'bg-[#525A43]/10 border-[#525A43]/30' 
-                        : 'bg-[#F9F9F6] border-[#A1A696]/20 group-hover:border-[#A1A696]/40'
-                    }`}>
-                      <div className="flex items-center justify-between text-[10px] text-[#525A43] font-bold uppercase tracking-wider mb-1">
-                        <span className="flex items-center gap-1.5">
-                          <Layers className="w-3.5 h-3.5 text-[#525A43]" />
-                          <span>Which Type of Folder is it:</span>
-                        </span>
-                        <span className="font-serif normal-case text-stone-500 text-[10px]">{folder.folderTypeUrdu}</span>
-                      </div>
-                      <div className="text-xs sm:text-sm font-extrabold text-[#2F3428] leading-snug">
-                        {folder.folderType}
-                      </div>
+                    <div>
+                      <span className="text-xs font-serif text-[#A1A696] font-bold block mb-0.5">
+                        {folder.urduName}
+                      </span>
+                      <h3 className="text-lg sm:text-xl font-bold font-serif text-white leading-tight">
+                        {folder.name === 'All' ? 'All Herbal Categories' : folder.name}
+                      </h3>
                     </div>
+                  </div>
+                </div>
 
-                    {/* Description */}
-                    <p className="text-xs text-stone-600 leading-relaxed">
-                      {folder.description}
-                    </p>
-
-                    {/* Focus Area Pill */}
-                    <div className="text-[11px] text-[#525A43] bg-stone-50 px-2.5 py-1.5 rounded-lg border border-stone-100 flex items-start gap-1.5">
-                      <span className="font-bold shrink-0">Focus:</span>
-                      <span className="text-stone-700 leading-tight">{folder.focusArea}</span>
+                {/* Card Content Body */}
+                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
+                  
+                  {/* Explicit Category Type Callout */}
+                  <div className={`p-3 rounded-xl border transition-all ${
+                    isSelected 
+                      ? 'bg-[#525A43]/10 border-[#525A43]/30' 
+                      : 'bg-[#F9F9F6] border-[#A1A696]/20 group-hover:border-[#A1A696]/40'
+                  }`}>
+                    <div className="flex items-center justify-between text-[10px] text-[#525A43] font-bold uppercase tracking-wider mb-1">
+                      <span className="flex items-center gap-1.5">
+                        <Layers className="w-3.5 h-3.5 text-[#525A43]" />
+                        <span>Category Type:</span>
+                      </span>
+                      <span className="font-serif normal-case text-stone-500 text-[10px]">{folder.folderTypeUrdu}</span>
+                    </div>
+                    <div className="text-xs sm:text-sm font-extrabold text-[#2F3428] leading-snug">
+                      {folder.folderType}
                     </div>
                   </div>
 
-                  {/* Folder Status / Open Action */}
+                  {/* Description */}
+                  <p className="text-xs text-stone-600 leading-relaxed line-clamp-2">
+                    {folder.description}
+                  </p>
+
+                  {/* Focus Area Pill */}
+                  <div className="text-[11px] text-[#525A43] bg-stone-50 px-2.5 py-1.5 rounded-lg border border-stone-100 flex items-start gap-1.5">
+                    <span className="font-bold shrink-0">Focus:</span>
+                    <span className="text-stone-700 truncate">{folder.focusArea}</span>
+                  </div>
+
+                  {/* Action Button */}
                   <div className="pt-2 border-t border-stone-100">
                     {isSelected ? (
                       <div className="w-full py-2.5 px-4 rounded-xl bg-[#525A43] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
-                        <FolderOpen className="w-4 h-4 text-[#A1A696]" />
-                        <span>Folder is Open &amp; Active</span>
                         <Check className="w-4 h-4 text-[#A1A696]" />
+                        <span>Active Category (Showing Below)</span>
                       </div>
                     ) : (
                       <div className="w-full py-2.5 px-4 rounded-xl bg-stone-100 group-hover:bg-[#525A43] text-[#2F3428] group-hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition-all">
-                        <Folder className="w-4 h-4" />
-                        <span>Open Folder</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-0.5 transition-transform" />
+                        <span>Explore Category</span>
+                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </div>
                     )}
                   </div>
@@ -552,7 +612,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
       {/* Catalog Products Section */}
       <section id="products-section" className="space-y-6 pt-4">
         
-        {/* Active Folder Header Banner */}
+        {/* Active Category Header Banner */}
         <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border-2 border-[#525A43]/30 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
           <div className="flex items-start sm:items-center gap-3">
             <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#525A43] text-[#A1A696] flex items-center justify-center shadow-sm shrink-0">
@@ -561,14 +621,14 @@ export const HomeView: React.FC<HomeViewProps> = ({
             <div>
               <div className="flex flex-wrap items-center gap-2">
                 <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#A1A696]/20 text-[#525A43] border border-[#A1A696]/40">
-                  Folder Type: {activeFolder.folderType}
+                  Category Type: {activeFolder.folderType}
                 </span>
                 <span className="text-xs text-stone-500 font-serif">
                   ({activeFolder.urduName})
                 </span>
               </div>
               <h3 className="text-base sm:text-lg font-bold font-serif text-[#2F3428] mt-1">
-                Currently Opened Folder: <span className="text-[#525A43] font-black">{activeFolder.name === 'All' ? 'All Herbal Categories' : activeFolder.name}</span>
+                Currently Browsing: <span className="text-[#525A43] font-black">{activeFolder.name === 'All' ? 'All Herbal Categories' : activeFolder.name}</span>
                 <span className="text-xs font-normal text-stone-500 ml-2">
                   ({filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'} found)
                 </span>
@@ -582,7 +642,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               className="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-1.5 transition-colors border border-stone-300 shrink-0 cursor-pointer"
             >
               <FolderArchive className="w-3.5 h-3.5 text-[#525A43]" />
-              <span>Show All Folders</span>
+              <span>View All Categories</span>
             </button>
           )}
         </div>
@@ -593,7 +653,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               Products in this Category
             </h2>
             <p className="text-xs text-stone-600 mt-1">
-              Pure Unani compounds, prophetic oils, and natural health supplements inside this folder.
+              Pure Unani compounds, prophetic oils, and natural health supplements inside this category.
             </p>
             {searchQuery && (
               <div className="flex items-center gap-2 mt-2">
