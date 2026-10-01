@@ -18,6 +18,7 @@ interface NavbarProps {
   onOpenAdminModal: () => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
+  onResetCategory?: () => void;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -28,7 +29,8 @@ export const Navbar: React.FC<NavbarProps> = ({
   isAdminLoggedIn,
   onOpenAdminModal,
   searchQuery,
-  setSearchQuery
+  setSearchQuery,
+  onResetCategory
 }) => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
@@ -44,6 +46,9 @@ export const Navbar: React.FC<NavbarProps> = ({
     : baseNavItems;
 
   const handleNavClick = (tab: NavTab) => {
+    if (tab === 'home' && onResetCategory) {
+      onResetCategory();
+    }
     setActiveTab(tab);
     setMobileMenuOpen(false);
     window.scrollTo({ top: 0, behavior: 'smooth' });

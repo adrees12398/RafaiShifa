@@ -43,6 +43,7 @@ export default function App() {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [categoryScreen, setCategoryScreen] = useState<string | null>(null);
 
   // Load Initial Products & Stored Cart, then sync catalog from Firestore
   useEffect(() => {
@@ -155,13 +156,17 @@ export default function App() {
       {/* Top Navbar */}
       <Navbar
         activeTab={activeTab}
-        setActiveTab={setActiveTab}
+        setActiveTab={(tab) => {
+          setActiveTab(tab);
+          if (tab !== 'home') setCategoryScreen(null);
+        }}
         cartCount={cartCount}
         onOpenCart={() => setIsCartOpen(true)}
         isAdminLoggedIn={isAdminLoggedIn}
         onOpenAdminModal={() => setActiveTab('admin')}
         searchQuery={searchQuery}
         setSearchQuery={setSearchQuery}
+        onResetCategory={() => setCategoryScreen(null)}
       />
 
       {/* Main View Content Body */}
@@ -175,6 +180,8 @@ export default function App() {
             setActiveTab={setActiveTab}
             searchQuery={searchQuery}
             setSearchQuery={setSearchQuery}
+            activeCategoryScreen={categoryScreen}
+            setActiveCategoryScreen={setCategoryScreen}
           />
         )}
 

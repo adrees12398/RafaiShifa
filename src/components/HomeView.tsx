@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { Product, NavTab } from '../types';
 import { ProductCard } from './ProductCard';
+import { CategoryDetailView } from './CategoryDetailView';
 import { getProductImageSrc } from '../lib/productImages';
 import { 
   Sparkles, 
@@ -111,6 +112,8 @@ interface HomeViewProps {
   setActiveTab: (tab: NavTab) => void;
   searchQuery: string;
   setSearchQuery: (q: string) => void;
+  activeCategoryScreen?: string | null;
+  setActiveCategoryScreen?: (cat: string | null) => void;
 }
 
 export const HomeView: React.FC<HomeViewProps> = ({
@@ -120,10 +123,29 @@ export const HomeView: React.FC<HomeViewProps> = ({
   cartProductIds,
   setActiveTab,
   searchQuery,
-  setSearchQuery
+  setSearchQuery,
+  activeCategoryScreen: externalActiveCategoryScreen,
+  setActiveCategoryScreen: externalSetActiveCategoryScreen
 }) => {
+  const [internalCategoryScreen, setInternalCategoryScreen] = useState<string | null>(null);
+  const activeCategoryScreen = externalActiveCategoryScreen !== undefined ? externalActiveCategoryScreen : internalCategoryScreen;
+  const setActiveCategoryScreen = externalSetActiveCategoryScreen || setInternalCategoryScreen;
+
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
+
+  const handleOpenCategory = (catName: string) => {
+    if (catName === 'All') {
+      setSelectedCategory('All');
+      setActiveCategoryScreen(null);
+      const el = document.getElementById('products-section');
+      if (el) el.scrollIntoView({ behavior: 'smooth' });
+    } else {
+      setSelectedCategory(catName);
+      setActiveCategoryScreen(catName);
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  };
 
   const baseCategoryNames = [
     'All',
@@ -185,6 +207,28 @@ export const HomeView: React.FC<HomeViewProps> = ({
     if (sortBy === 'rating') return b.rating - a.rating;
     return (b.isFeatured ? 1 : 0) - (a.isFeatured ? 1 : 0);
   });
+
+  // Dedicated Category Screen View (When a specific category is clicked)
+  if (activeCategoryScreen) {
+    const screenCategoryInfo = categoryFolders.find(c => c.name === activeCategoryScreen) || activeFolder;
+    return (
+      <CategoryDetailView
+        categoryInfo={screenCategoryInfo}
+        allCategories={categoryFolders}
+        products={products}
+        onAddToCart={onAddToCart}
+        onQuickView={onQuickView}
+        cartProductIds={cartProductIds}
+        onBack={() => {
+          setActiveCategoryScreen(null);
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        }}
+        onSelectCategory={(catName) => {
+          handleOpenCategory(catName);
+        }}
+      />
+    );
+  }
 
   return (
     <div className="space-y-12 pb-16">
@@ -401,11 +445,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               return (
                 <button
                   key={folder.name}
-                  onClick={() => {
-                    setSelectedCategory(folder.name);
-                    const el = document.getElementById('products-section');
-                    if (el) el.scrollIntoView({ behavior: 'smooth' });
-                  }}
+                  onClick={() => handleOpenCategory(folder.name)}
                   className="group flex flex-col items-center text-center shrink-0 w-20 sm:w-24 cursor-pointer focus:outline-none transition-all"
                 >
                   {/* Round Category Avatar with Ring */}
@@ -510,11 +550,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
             return (
               <div
                 key={folder.name}
-                onClick={() => {
-                  setSelectedCategory(folder.name);
-                  const el = document.getElementById('products-section');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
+                onClick={() => handleOpenCategory(folder.name)}
                 className={`group relative bg-white rounded-2xl sm:rounded-3xl overflow-hidden border-2 transition-all duration-300 cursor-pointer flex flex-col justify-between hover:shadow-xl transform hover:-translate-y-1 ${
                   isSelected 
                     ? 'border-[#525A43] ring-4 ring-[#525A43]/10 shadow-lg' 
@@ -590,12 +626,12 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <div className="pt-2 border-t border-stone-100">
                     {isSelected ? (
                       <div className="w-full py-2.5 px-4 rounded-xl bg-[#525A43] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
-                        <Check className="w-4 h-4 text-[#A1A696]" />
-                        <span>Active Category (Showing Below)</span>
+                        <span>Open Category Screen &amp; All Types</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
                       </div>
                     ) : (
                       <div className="w-full py-2.5 px-4 rounded-xl bg-stone-100 group-hover:bg-[#525A43] text-[#2F3428] group-hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition-all">
-                        <span>Explore Category</span>
+                        <span>Explore Category &amp; All Types</span>
                         <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
                       </div>
                     )}
@@ -637,13 +673,23 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
 
           {selectedCategory !== 'All' && (
-            <button
-              onClick={() => setSelectedCategory('All')}
-              className="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-1.5 transition-colors border border-stone-300 shrink-0 cursor-pointer"
-            >
-              <FolderArchive className="w-3.5 h-3.5 text-[#525A43]" />
-              <span>View All Categories</span>
-            </button>
+            <div className="flex flex-wrap items-center gap-2">
+              <button
+                onClick={() => handleOpenCategory(selectedCategory)}
+                className="px-3.5 py-2 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm shrink-0 cursor-pointer"
+              >
+                <Layers className="w-3.5 h-3.5 text-[#A1A696]" />
+                <span>Open Category Screen &amp; All Types</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+              <button
+                onClick={() => setSelectedCategory('All')}
+                className="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-1.5 transition-colors border border-stone-300 shrink-0 cursor-pointer"
+              >
+                <FolderArchive className="w-3.5 h-3.5 text-[#525A43]" />
+                <span>View All</span>
+              </button>
+            </div>
           )}
         </div>
 
