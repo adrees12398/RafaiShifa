@@ -135,16 +135,9 @@ export const HomeView: React.FC<HomeViewProps> = ({
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
 
   const handleOpenCategory = (catName: string) => {
-    if (catName === 'All') {
-      setSelectedCategory('All');
-      setActiveCategoryScreen(null);
-      const el = document.getElementById('products-section');
-      if (el) el.scrollIntoView({ behavior: 'smooth' });
-    } else {
-      setSelectedCategory(catName);
-      setActiveCategoryScreen(catName);
-      window.scrollTo({ top: 0, behavior: 'smooth' });
-    }
+    setSelectedCategory(catName);
+    setActiveCategoryScreen(catName);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
   const baseCategoryNames = [
@@ -645,168 +638,95 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
       </section>
 
-      {/* Catalog Products Section */}
-      <section id="products-section" className="space-y-6 pt-4">
-        
-        {/* Active Category Header Banner */}
-        <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border-2 border-[#525A43]/30 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
-          <div className="flex items-start sm:items-center gap-3">
-            <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#525A43] text-[#A1A696] flex items-center justify-center shadow-sm shrink-0">
-              <FolderOpen className="w-5 h-5 sm:w-6 sm:h-6" />
-            </div>
-            <div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#A1A696]/20 text-[#525A43] border border-[#A1A696]/40">
-                  Category Type: {activeFolder.folderType}
-                </span>
-                <span className="text-xs text-stone-500 font-serif">
-                  ({activeFolder.urduName})
-                </span>
+      {/* Search Results Section (Only visible when user actively searches on Home) */}
+      {searchQuery ? (
+        <section id="search-results-section" className="space-y-6 pt-2">
+          <div className="bg-white p-4 sm:p-5 rounded-2xl sm:rounded-3xl border-2 border-[#525A43]/30 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl bg-[#525A43] text-white flex items-center justify-center shadow-sm shrink-0">
+                <Search className="w-5 h-5 sm:w-6 sm:h-6" />
               </div>
-              <h3 className="text-base sm:text-lg font-bold font-serif text-[#2F3428] mt-1">
-                Currently Browsing: <span className="text-[#525A43] font-black">{activeFolder.name === 'All' ? 'All Herbal Categories' : activeFolder.name}</span>
-                <span className="text-xs font-normal text-stone-500 ml-2">
-                  ({filteredProducts.length} {filteredProducts.length === 1 ? 'item' : 'items'} found)
+              <div>
+                <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#525A43]/10 text-[#525A43]">
+                  Search Results
                 </span>
-              </h3>
-            </div>
-          </div>
-
-          {selectedCategory !== 'All' && (
-            <div className="flex flex-wrap items-center gap-2">
-              <button
-                onClick={() => handleOpenCategory(selectedCategory)}
-                className="px-3.5 py-2 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white text-xs font-bold flex items-center gap-1.5 transition-colors shadow-sm shrink-0 cursor-pointer"
-              >
-                <Layers className="w-3.5 h-3.5 text-[#A1A696]" />
-                <span>Open Category Screen &amp; All Types</span>
-                <ArrowRight className="w-3.5 h-3.5" />
-              </button>
-              <button
-                onClick={() => setSelectedCategory('All')}
-                className="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-1.5 transition-colors border border-stone-300 shrink-0 cursor-pointer"
-              >
-                <FolderArchive className="w-3.5 h-3.5 text-[#525A43]" />
-                <span>View All</span>
-              </button>
-            </div>
-          )}
-        </div>
-
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-4 border-b border-stone-200 pb-4">
-          <div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-[#2F3428] tracking-tight font-serif">
-              Products in this Category
-            </h2>
-            <p className="text-xs text-stone-600 mt-1">
-              Pure Unani compounds, prophetic oils, and natural health supplements inside this category.
-            </p>
-            {searchQuery && (
-              <div className="flex items-center gap-2 mt-2">
-                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold bg-[#525A43]/10 text-[#525A43] border border-[#525A43]/20">
-                  <Search className="w-3 h-3" />
-                  <span>Found {filteredProducts.length} result{filteredProducts.length === 1 ? '' : 's'} for &ldquo;{searchQuery}&rdquo;</span>
-                  <button
-                    onClick={() => setSearchQuery('')}
-                    className="ml-1 p-0.5 hover:bg-[#525A43]/20 rounded-full transition-colors"
-                    aria-label="Clear active search"
-                    title="Clear search"
-                  >
-                    <X className="w-3 h-3" />
-                  </button>
-                </span>
+                <h3 className="text-base sm:text-lg font-bold font-serif text-[#2F3428] mt-1">
+                  Found {filteredProducts.length} {filteredProducts.length === 1 ? 'remedy' : 'remedies'} for &ldquo;{searchQuery}&rdquo;
+                </h3>
               </div>
-            )}
-          </div>
-
-          {/* Sort Dropdown */}
-          <div className="flex items-center gap-2">
-            <SlidersHorizontal className="w-4 h-4 text-stone-500" />
-            <span className="text-xs font-semibold text-stone-700">Sort by:</span>
-            <select
-              value={sortBy}
-              onChange={(e: any) => setSortBy(e.target.value)}
-              className="bg-white border border-stone-300 rounded-lg px-3 py-1.5 text-xs text-[#2F3428] font-medium focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
-            >
-              <option value="featured">Featured First</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="rating">Top Rated</option>
-            </select>
-          </div>
-        </div>
-
-        {/* Category Quick Pill Filters */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          {categories.map((cat) => {
-            const isCatSelected = selectedCategory === cat;
-            const catCount = cat === 'All' ? products.length : products.filter(p => p.category === cat).length;
-            return (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={`px-3.5 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
-                  isCatSelected
-                    ? 'bg-[#525A43] text-white shadow-md border border-[#A1A696]'
-                    : 'bg-white text-[#2F3428] hover:bg-stone-100 border border-stone-200'
-                }`}
-              >
-                {isCatSelected ? (
-                  <FolderOpen className="w-3.5 h-3.5 text-[#A1A696]" />
-                ) : (
-                  <Folder className="w-3.5 h-3.5 text-stone-400" />
-                )}
-                <span>{cat}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-                  isCatSelected ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-500'
-                }`}>
-                  {catCount}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Products Grid */}
-        {filteredProducts.length === 0 ? (
-          <div className="bg-white rounded-2xl p-12 text-center border border-stone-200 space-y-3">
-            <div className="w-16 h-16 mx-auto rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
-              <Leaf className="w-8 h-8" />
             </div>
-            <h3 className="text-base font-bold text-[#2F3428]">
-              {searchQuery ? `No products matching "${searchQuery}"` : 'No products found'}
-            </h3>
-            <p className="text-xs text-stone-500 max-w-xs mx-auto">
-              {searchQuery
-                ? 'Try checking for typos, using general terms, or explore our popular remedies above.'
-                : 'Try resetting your search query or selecting a different category.'}
-            </p>
+
             <button
-              onClick={() => {
-                setSelectedCategory('All');
-                setSearchQuery('');
-              }}
-              className="mt-2 px-4 py-2 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white text-xs font-bold transition-colors shadow-sm"
+              onClick={() => setSearchQuery('')}
+              className="px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-1.5 transition-colors border border-stone-300 shrink-0 cursor-pointer"
             >
-              Show All Products
+              <X className="w-3.5 h-3.5 text-stone-500" />
+              <span>Clear Search</span>
             </button>
           </div>
-        ) : (
-          <div className="products-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {filteredProducts.map((product) => (
-              <div key={product.id} className="product-grid-item">
-                <ProductCard
-                  product={product}
-                  onAddToCart={onAddToCart}
-                  onQuickView={onQuickView}
-                  isInCart={cartProductIds.includes(product.id)}
-                />
+
+          {filteredProducts.length === 0 ? (
+            <div className="bg-white rounded-2xl p-12 text-center border border-stone-200 space-y-3">
+              <div className="w-16 h-16 mx-auto rounded-full bg-stone-100 flex items-center justify-center text-stone-400">
+                <Leaf className="w-8 h-8" />
               </div>
+              <h3 className="text-base font-bold text-[#2F3428]">
+                No remedies matching &ldquo;{searchQuery}&rdquo;
+              </h3>
+              <p className="text-xs text-stone-500 max-w-xs mx-auto">
+                Try checking for typos or tap any category folder above to explore our remedies.
+              </p>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="mt-2 px-4 py-2 rounded-xl bg-[#525A43] text-white text-xs font-bold shadow-sm"
+              >
+                Clear Search &amp; View Folders
+              </button>
+            </div>
+          ) : (
+            <div className="products-grid grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+              {filteredProducts.map((product) => (
+                <div key={product.id} className="product-grid-item">
+                  <ProductCard
+                    product={product}
+                    onAddToCart={onAddToCart}
+                    onQuickView={onQuickView}
+                    isInCart={cartProductIds.includes(product.id)}
+                  />
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
+      ) : (
+        /* When not searching, SINGLE ITEMS ARE HIDDEN FROM HOME SCREEN. Only category folders are shown! */
+        <div className="bg-white rounded-3xl p-6 sm:p-8 border border-[#A1A696]/30 shadow-sm text-center space-y-3">
+          <div className="w-12 h-12 mx-auto rounded-2xl bg-[#525A43]/10 text-[#525A43] flex items-center justify-center">
+            <Layers className="w-6 h-6" />
+          </div>
+          <div>
+            <h3 className="text-lg sm:text-xl font-bold font-serif text-[#2F3428]">
+              Select Any Category Folder to View All Remedies
+            </h3>
+            <p className="text-xs sm:text-sm text-stone-600 max-w-lg mx-auto mt-1">
+              Tap any category folder above to open its dedicated screen, view all formulation types (oils, syrups, majuns, powders), and explore complete remedies within that category.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-2 pt-2">
+            {categoryFolders.map((folder) => (
+              <button
+                key={folder.name}
+                onClick={() => handleOpenCategory(folder.name)}
+                className="px-3.5 py-2 rounded-xl bg-stone-50 hover:bg-[#525A43] text-stone-700 hover:text-white text-xs font-bold transition-all cursor-pointer border border-stone-200 flex items-center gap-1.5 shadow-2xs"
+              >
+                <FolderOpen className="w-3.5 h-3.5" />
+                <span>{folder.name === 'All' ? 'View Master Catalog' : folder.name}</span>
+                <ArrowRight className="w-3 h-3" />
+              </button>
             ))}
           </div>
-        )}
-
-      </section>
+        </div>
+      )}
 
       {/* Lead Physician Banner: Dr. Hakeem Hafiz Mohsin Ali */}
       <section className="bg-[#525A43] rounded-2xl sm:rounded-3xl p-5 sm:p-6 md:p-8 text-white border border-[#A1A696]/40 shadow-xl relative overflow-hidden">
