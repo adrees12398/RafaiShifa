@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
-import { Product, NavTab } from '../types';
+import { Product, NavTab, CategoryFolderInfo } from '../types';
+import { INITIAL_CATEGORIES } from '../data/initialData';
 import { ProductCard } from './ProductCard';
 import { CategoryDetailView } from './CategoryDetailView';
 import { getProductImageSrc } from '../lib/productImages';
@@ -106,6 +107,7 @@ export const PREDEFINED_CATEGORY_FOLDERS: Record<string, CategoryFolderInfo> = {
 
 interface HomeViewProps {
   products: Product[];
+  categories?: CategoryFolderInfo[];
   onAddToCart: (p: Product) => void;
   onQuickView: (p: Product) => void;
   cartProductIds: string[];
@@ -118,6 +120,7 @@ interface HomeViewProps {
 
 export const HomeView: React.FC<HomeViewProps> = ({
   products,
+  categories: propCategories = [],
   onAddToCart,
   onQuickView,
   cartProductIds,
@@ -140,49 +143,45 @@ export const HomeView: React.FC<HomeViewProps> = ({
     window.scrollTo({ top: 0, behavior: 'smooth' });
   };
 
-  const baseCategoryNames = [
-    'All',
-    'Tib-e-Nabvi Special',
-    'Heart & Digestion',
-    'Immunity & Daily Wellness',
-    'Joint Care & Oils',
-    'Herbal Teas & Extracts'
-  ];
+  // Master 'All' master directory entry
+  const masterAllFolder: CategoryFolderInfo = PREDEFINED_CATEGORY_FOLDERS['All'];
 
-  const customCategories = Array.from(
-    new Set(products.map((p) => p.category).filter((c) => c && !baseCategoryNames.includes(c)))
-  );
+  // Base list from Firestore / props or fallback to INITIAL_CATEGORIES
+  const baseCategoryList = (propCategories && propCategories.length > 0)
+    ? propCategories
+    : INITIAL_CATEGORIES;
 
-  const categories = [...baseCategoryNames, ...customCategories];
-
-  const categoryFolders: CategoryFolderInfo[] = categories.map((cat) => {
-    if (PREDEFINED_CATEGORY_FOLDERS[cat]) {
-      return PREDEFINED_CATEGORY_FOLDERS[cat];
-    }
-    return {
-      id: cat.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-      name: cat,
-      urduName: 'خصوصی طبی زمرہ',
-      folderType: `Specialized Herbal Formulation (${cat})`,
-      folderTypeUrdu: 'خصوصی طبی شعبہ',
-      badge: 'Custom Category',
-      description: `Specialized herbal preparations and remedies filed under ${cat}.`,
-      focusArea: 'Targeted wellness and specialized treatment',
-      imageUrl: '/products/growmax.jpeg'
-    };
-  });
-
-  const activeFolder = PREDEFINED_CATEGORY_FOLDERS[selectedCategory] || {
-    id: selectedCategory.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    name: selectedCategory,
+  // Find any product categories that may not be in the configured categories
+  const configuredNames = new Set(baseCategoryList.map((c) => c.name.toLowerCase()));
+  const extraProductCategories = Array.from(
+    new Set(
+      products
+        .map((p) => p.category)
+        .filter((c) => c && c.toLowerCase() !== 'all' && !configuredNames.has(c.toLowerCase()))
+    )
+  ).map((cat): CategoryFolderInfo => ({
+    id: cat.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+    name: cat,
     urduName: 'خصوصی طبی زمرہ',
-    folderType: `Specialized Herbal Formulation (${selectedCategory})`,
+    folderType: `Specialized Herbal Formulation (${cat})`,
     folderTypeUrdu: 'خصوصی طبی شعبہ',
-    badge: 'Category Folder',
-    description: `Specialized herbal preparations filed under ${selectedCategory}.`,
+    badge: 'Custom Category',
+    description: `Specialized herbal preparations and remedies filed under ${cat}.`,
     focusArea: 'Targeted wellness and specialized treatment',
     imageUrl: '/products/growmax.jpeg'
-  };
+  }));
+
+  // Ensure 'All' is at the beginning of the categories list
+  const hasAllInList = baseCategoryList.some((c) => c.name.toLowerCase() === 'all');
+  const categoryFolders: CategoryFolderInfo[] = [
+    ...(hasAllInList ? [] : [masterAllFolder]),
+    ...baseCategoryList,
+    ...extraProductCategories
+  ];
+
+  const activeFolder = categoryFolders.find(
+    (c) => c.name.toLowerCase() === selectedCategory.toLowerCase()
+  ) || categoryFolders[0] || masterAllFolder;
 
   // Filtering & Sorting
   const filteredProducts = products.filter((p) => {

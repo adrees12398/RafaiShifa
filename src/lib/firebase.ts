@@ -12,8 +12,8 @@ import {
   serverTimestamp,
   setDoc 
 } from 'firebase/firestore';
-import { Order, ContactMessage, Product } from '../types';
-import { INITIAL_PRODUCTS } from '../data/initialData';
+import { Order, ContactMessage, Product, CategoryFolderInfo } from '../types';
+import { INITIAL_PRODUCTS, INITIAL_CATEGORIES } from '../data/initialData';
 
 // Standard Firebase config - loaded from environment variables,
 // with hardcoded fallback values so Firestore works even in deployed
@@ -38,6 +38,8 @@ const LOCAL_MESSAGES_KEY = 'rafaishifa_messages_v1';
 // v2 forces browsers with the old (stale) cached catalog to reload fresh data
 const LOCAL_PRODUCTS_KEY = 'rafaishifa_products_v2';
 const LEGACY_PRODUCTS_KEY = 'rafaishifa_products_v1';
+const LOCAL_CATEGORIES_KEY = 'rafaishifa_categories_v1';
+const CATEGORIES_CATALOG_DOC = 'categories/catalog';
 
 // Get local stored orders
 const getLocalOrders = (): Order[] => {
@@ -508,4 +510,85 @@ function seedCatalogFromLocal(): void {
   if (local.length > 0) {
     syncProductsToDb(local);
   }
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// CATEGORY MANAGEMENT  (mirrors the products catalog pattern)
+// ─────────────────────────────────────────────────────────────────────────────
+
+/** Read categories from localStorage (instant, offline-safe, defaults to INITIAL_CATEGORIES). */
+export function getStoredCategories(): CategoryFolderInfo[] {
+  try {
+    const raw = localStorage.getItem(LOCAL_CATEGORIES_KEY);
+    if (raw) {
+      const parsed = JSON.parse(raw) as CategoryFolderInfo[];
+      if (Array.isArray(parsed) && parsed.length > 0) return parsed;
+    }
+    return INITIAL_CATEGORIES;
+  } catch {
+    return INITIAL_CATEGORIES;
+  }
+}
+
+/** Write categories to localStorage only (no Firestore write). */
+function cacheCategoriesLocally(cats: CategoryFolderInfo[]): void {
+  try {
+    localStorage.setItem(LOCAL_CATEGORIES_KEY, JSON.stringify(cats));
+  } catch (e) {
+    console.error('Categories local cache error:', e);
+  }
+}
+
+/** Persist categories to localStorage AND Firestore (admin operations). */
+export async function saveCategoriesToDb(cats: CategoryFolderInfo[]): Promise<void> {
+  cacheCategoriesLocally(cats);
+  try {
+    const ref = doc(db, CATEGORIES_CATALOG_DOC);
+    await withTimeout(
+      setDoc(ref, { items: cats, updatedAt: serverTimestamp() }),
+      10000
+    );
+    console.log('✅ Categories saved to Firestore:', cats.length);
+  } catch (e) {
+    console.error('❌ Categories Firestore save failed:', e);
+    // Local cache already saved — don't rethrow so UI isn't blocked
+  }
+}
+
+/** Real-time listener for the categories catalog. Falls back to local cache / INITIAL_CATEGORIES. */
+export function subscribeCategories(
+  onUpdate: (cats: CategoryFolderInfo[]) => void
+): () => void {
+  let unsubscribe = () => {};
+  try {
+    const ref = doc(db, CATEGORIES_CATALOG_DOC);
+    unsubscribe = onSnapshot(
+      ref,
+      (snapshot) => {
+        const data = snapshot.exists() ? snapshot.data() : null;
+        const items = Array.isArray(data?.items)
+          ? (data.items as CategoryFolderInfo[])
+          : null;
+        if (items && items.length > 0) {
+          cacheCategoriesLocally(items);
+          onUpdate(items);
+          console.log('✅ Categories updated from Firestore:', items.length);
+        } else {
+          // If no categories in cloud yet, seed from default/local
+          const current = getStoredCategories();
+          if (current.length > 0) {
+            saveCategoriesToDb(current);
+          }
+        }
+      },
+      (error) => {
+        console.error('❌ Categories Firestore snapshot error:', error);
+        onUpdate(getStoredCategories());
+      }
+    );
+  } catch (e) {
+    console.error('❌ Categories Firestore connection error:', e);
+    onUpdate(getStoredCategories());
+  }
+  return unsubscribe;
 }

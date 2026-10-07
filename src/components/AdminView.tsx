@@ -1,13 +1,16 @@
 import React, { useState, useEffect } from 'react';
-import { Order, Product, ContactMessage } from '../types';
+import { Order, Product, ContactMessage, CategoryFolderInfo } from '../types';
 import { 
   subscribeOrders, 
   updateOrderStatusInDb, 
   fetchContactMessages, 
   saveStoredProducts,
-  checkFirestoreConnection
+  checkFirestoreConnection,
+  saveCategoriesToDb,
+  getStoredCategories
 } from '../lib/firebase';
 import { uploadProductImage } from '../lib/cloudinary';
+import { INITIAL_CATEGORIES } from '../data/initialData';
 
 // Convert a base64 data URL (old localStorage format) into a File for upload.
 function dataUrlToFile(dataUrl: string, name = 'product-image'): File {
@@ -39,7 +42,8 @@ import {
   Trash2,
   Pencil,
   Image as ImageIcon,
-  Upload
+  Upload,
+  Layers
 } from 'lucide-react';
 
 interface AdminViewProps {
@@ -47,6 +51,8 @@ interface AdminViewProps {
   setIsAdminLoggedIn: (val: boolean) => void;
   products: Product[];
   setProducts: React.Dispatch<React.SetStateAction<Product[]>>;
+  categories?: CategoryFolderInfo[];
+  setCategories?: React.Dispatch<React.SetStateAction<CategoryFolderInfo[]>>;
   onLogout?: () => void;
 }
 
@@ -55,13 +61,15 @@ export const AdminView: React.FC<AdminViewProps> = ({
   setIsAdminLoggedIn,
   products,
   setProducts,
+  categories: propCategories,
+  setCategories: propSetCategories,
   onLogout
 }) => {
   const [passwordInput, setPasswordInput] = useState('');
   const [loginError, setLoginError] = useState('');
   
-  // Dashboard Tabs: 'orders' | 'products' | 'messages'
-  const [adminTab, setAdminTab] = useState<'orders' | 'products' | 'messages'>('orders');
+  // Dashboard Tabs: 'orders' | 'products' | 'categories' | 'messages'
+  const [adminTab, setAdminTab] = useState<'orders' | 'products' | 'categories' | 'messages'>('orders');
 
   // Orders State
   const [orders, setOrders] = useState<Order[]>([]);
@@ -97,6 +105,35 @@ export const AdminView: React.FC<AdminViewProps> = ({
   const [newProdDesc, setNewProdDesc] = useState('');
   const [newProdDosage, setNewProdDosage] = useState('1 teaspoon twice daily');
   const [newProdImageUrl, setNewProdImageUrl] = useState('');
+
+  // Categories Management State
+  const [internalCategories, setInternalCategories] = useState<CategoryFolderInfo[]>(() => {
+    return (propCategories && propCategories.length > 0) ? propCategories : getStoredCategories();
+  });
+
+  const categoriesList = (propCategories && propCategories.length > 0) ? propCategories : internalCategories;
+
+  const updateCategories = (newCats: CategoryFolderInfo[]) => {
+    setInternalCategories(newCats);
+    if (propSetCategories) {
+      propSetCategories(newCats);
+    }
+    saveCategoriesToDb(newCats);
+  };
+
+  // Category Modal State
+  const [showCategoryModal, setShowCategoryModal] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<CategoryFolderInfo | null>(null);
+  const [catName, setCatName] = useState('');
+  const [catUrduName, setCatUrduName] = useState('');
+  const [catFolderType, setCatFolderType] = useState('');
+  const [catFolderTypeUrdu, setCatFolderTypeUrdu] = useState('');
+  const [catBadge, setCatBadge] = useState('');
+  const [catDescription, setCatDescription] = useState('');
+  const [catFocusArea, setCatFocusArea] = useState('');
+  const [catImageUrl, setCatImageUrl] = useState('');
+  const [isUploadingCatImage, setIsUploadingCatImage] = useState(false);
+  const [categorySearchQuery, setCategorySearchQuery] = useState('');
 
   // Real-time Firestore listener for live orders
   useEffect(() => {
@@ -237,6 +274,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdName('');
     setNewProdUrdu('');
     setNewProdPrice(500);
+    setNewProdCategory(categoriesList[0]?.name || 'Tib-e-Nabvi Special');
     setNewProdDesc('');
     setNewProdDosage('1 teaspoon twice daily');
     setNewProdImageUrl('');
@@ -329,6 +367,163 @@ export const AdminView: React.FC<AdminViewProps> = ({
         console.error('Firestore sync failed:', err);
       });
     });
+  };
+
+  // ─────────────────────────────────────────────────────────────────────────────
+  // CATEGORIES CRUD HANDLERS
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  const openAddCategoryModal = () => {
+    setEditingCategory(null);
+    setCatName('');
+    setCatUrduName('');
+    setCatFolderType('');
+    setCatFolderTypeUrdu('');
+    setCatBadge('Specialized Remedy');
+    setCatDescription('');
+    setCatFocusArea('');
+    setCatImageUrl('/products/LiverBoost.jpeg');
+    setShowCategoryModal(true);
+  };
+
+  const handleEditCategory = (c: CategoryFolderInfo) => {
+    setEditingCategory(c);
+    setCatName(c.name);
+    setCatUrduName(c.urduName || '');
+    setCatFolderType(c.folderType || '');
+    setCatFolderTypeUrdu(c.folderTypeUrdu || '');
+    setCatBadge(c.badge || '');
+    setCatDescription(c.description || '');
+    setCatFocusArea(c.focusArea || '');
+    setCatImageUrl(c.imageUrl || '/products/LiverBoost.jpeg');
+    setShowCategoryModal(true);
+  };
+
+  const closeCategoryModal = () => {
+    setShowCategoryModal(false);
+    setEditingCategory(null);
+    setCatName('');
+    setCatUrduName('');
+    setCatFolderType('');
+    setCatFolderTypeUrdu('');
+    setCatBadge('');
+    setCatDescription('');
+    setCatFocusArea('');
+    setCatImageUrl('');
+  };
+
+  const handleCatImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    try {
+      setIsUploadingCatImage(true);
+      const url = await uploadProductImage(file);
+      setCatImageUrl(url);
+      alert('Category image uploaded successfully!');
+      return;
+    } catch (err) {
+      console.warn('Cloudinary upload failed, using local reader fallback:', err);
+    } finally {
+      setIsUploadingCatImage(false);
+    }
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      const dataUrl = event.target?.result as string;
+      setCatImageUrl(dataUrl);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleSaveCategory = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!catName.trim()) {
+      alert('Please enter a category name');
+      return;
+    }
+
+    const trimmedName = catName.trim();
+
+    if (editingCategory) {
+      const oldName = editingCategory.name;
+      const updatedList = categoriesList.map((c) =>
+        c.id === editingCategory.id
+          ? {
+              ...c,
+              name: trimmedName,
+              urduName: catUrduName.trim() || c.urduName || trimmedName,
+              folderType: catFolderType.trim() || c.folderType || `Specialized Treatment (${trimmedName})`,
+              folderTypeUrdu: catFolderTypeUrdu.trim() || c.folderTypeUrdu || 'خصوصی طبی شعبہ',
+              badge: catBadge.trim() || c.badge || 'Category',
+              description: catDescription.trim() || c.description || `Herbal remedies and formulations for ${trimmedName}.`,
+              focusArea: catFocusArea.trim() || c.focusArea || 'Specialized Unani therapeutic care',
+              imageUrl: catImageUrl.trim() || c.imageUrl || '/products/LiverBoost.jpeg'
+            }
+          : c
+      );
+
+      // If category name was updated, update any products in this category
+      if (oldName !== trimmedName) {
+        const updatedProducts = products.map((p) =>
+          p.category === oldName ? { ...p, category: trimmedName } : p
+        );
+        if (JSON.stringify(updatedProducts) !== JSON.stringify(products)) {
+          setProducts(updatedProducts);
+          saveStoredProducts(updatedProducts);
+        }
+      }
+
+      updateCategories(updatedList);
+      closeCategoryModal();
+      alert(`Category "${trimmedName}" updated successfully!`);
+      return;
+    }
+
+    // Adding new category
+    if (categoriesList.some((c) => c.name.toLowerCase() === trimmedName.toLowerCase())) {
+      alert(`A category named "${trimmedName}" already exists.`);
+      return;
+    }
+
+    const newCategory: CategoryFolderInfo = {
+      id: trimmedName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+      name: trimmedName,
+      urduName: catUrduName.trim() || 'خصوصی طبی زمرہ',
+      folderType: catFolderType.trim() || `Specialized Formulation (${trimmedName})`,
+      folderTypeUrdu: catFolderTypeUrdu.trim() || 'خصوصی طبی شعبہ',
+      badge: catBadge.trim() || 'Specialized',
+      description: catDescription.trim() || `Authentic Unani and herbal treatments for ${trimmedName}.`,
+      focusArea: catFocusArea.trim() || 'Targeted holistic healthcare and remedy formulations',
+      imageUrl: catImageUrl.trim() || '/products/LiverBoost.jpeg'
+    };
+
+    const updatedList = [...categoriesList, newCategory];
+    updateCategories(updatedList);
+    closeCategoryModal();
+    alert(`Category "${trimmedName}" created successfully!`);
+  };
+
+  const handleDeleteCategory = (catId: string, categoryName: string) => {
+    if (!confirm(`Are you sure you want to delete category "${categoryName}"?\n\nRemedies in this category will remain in the catalog.`)) {
+      return;
+    }
+
+    const updatedList = categoriesList.filter((c) => c.id !== catId && c.name !== categoryName);
+    updateCategories(updatedList);
+    alert(`Category "${categoryName}" removed.`);
+  };
+
+  const handleResetCategories = () => {
+    if (!confirm('Are you sure you want to restore default herbal categories? Any custom categories will be replaced with standard categories.')) {
+      return;
+    }
+    updateCategories(INITIAL_CATEGORIES);
+    alert('Categories restored to defaults.');
   };
 
   // One-click migration: move old localStorage (base64) product images to
@@ -659,6 +854,18 @@ export const AdminView: React.FC<AdminViewProps> = ({
         </button>
 
         <button
+          onClick={() => setAdminTab('categories')}
+          className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
+            adminTab === 'categories' 
+              ? 'bg-[#525A43] text-white shadow-md' 
+              : 'bg-white text-stone-700 hover:bg-stone-100 border border-stone-200'
+          }`}
+        >
+          <Layers className="w-4 h-4" />
+          <span>Manage Categories ({categoriesList.length})</span>
+        </button>
+
+        <button
           onClick={() => setAdminTab('messages')}
           className={`px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 transition-all ${
             adminTab === 'messages' 
@@ -937,6 +1144,187 @@ export const AdminView: React.FC<AdminViewProps> = ({
         </div>
       )}
 
+      {/* TAB: MANAGE CATEGORIES */}
+      {adminTab === 'categories' && (
+        <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6 space-y-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-4 border-b border-stone-200">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="w-2.5 h-2.5 rounded-full bg-[#525A43]"></span>
+                <h2 className="text-xl font-black text-[#2F3428] font-serif flex items-center gap-2">
+                  <Layers className="w-5 h-5 text-[#525A43]" />
+                  <span>Category Folders & Collections ({categoriesList.length})</span>
+                </h2>
+              </div>
+              <p className="text-xs text-stone-500 mt-1">
+                Dynamically manage shop-by-category cards, folder types, Urdu names, and clinical scopes. All changes sync in real-time to the home screen.
+              </p>
+            </div>
+
+            <div className="flex items-center gap-2 flex-wrap">
+              <button
+                onClick={handleResetCategories}
+                className="px-3 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-stone-700 text-xs font-semibold border border-stone-200 transition-colors"
+                title="Reset categories to default initial list"
+              >
+                Reset to Defaults
+              </button>
+              <button
+                onClick={openAddCategoryModal}
+                className="px-4 py-2.5 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white text-xs font-bold flex items-center gap-2 shadow-md transition-all active:scale-95"
+              >
+                <Plus className="w-4 h-4" />
+                <span>Add New Category</span>
+              </button>
+            </div>
+          </div>
+
+          {/* Search bar for categories */}
+          <div className="relative max-w-md">
+            <input
+              type="text"
+              value={categorySearchQuery}
+              onChange={(e) => setCategorySearchQuery(e.target.value)}
+              placeholder="Search categories by name, Urdu, classification, or ailments..."
+              className="w-full bg-[#F9F9F6] border border-stone-300 rounded-xl py-2 pl-9 pr-4 text-xs text-[#2F3428] focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+            />
+            <Search className="w-4 h-4 text-stone-400 absolute left-3 top-2.5" />
+          </div>
+
+          {/* Categories Grid */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {categoriesList
+              .filter((cat) => {
+                if (!categorySearchQuery) return true;
+                const q = categorySearchQuery.toLowerCase();
+                return (
+                  cat.name.toLowerCase().includes(q) ||
+                  (cat.urduName && cat.urduName.includes(q)) ||
+                  (cat.folderType && cat.folderType.toLowerCase().includes(q)) ||
+                  (cat.focusArea && cat.focusArea.toLowerCase().includes(q)) ||
+                  (cat.description && cat.description.toLowerCase().includes(q))
+                );
+              })
+              .map((cat) => {
+                const prodCount = products.filter(
+                  (p) => p.category.toLowerCase() === cat.name.toLowerCase()
+                ).length;
+
+                return (
+                  <div
+                    key={cat.id || cat.name}
+                    className="bg-white rounded-2xl border border-stone-200 shadow-sm hover:shadow-md transition-shadow overflow-hidden flex flex-col justify-between"
+                  >
+                    <div>
+                      {/* Category Header with Image */}
+                      <div className="relative h-40 bg-stone-100 overflow-hidden">
+                        <img
+                          src={cat.imageUrl || '/products/LiverBoost.jpeg'}
+                          alt={cat.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.currentTarget.src = '/products/LiverBoost.jpeg';
+                          }}
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/35 to-transparent" />
+                        
+                        {/* Badge */}
+                        <div className="absolute top-3 left-3">
+                          <span className="px-2.5 py-1 rounded-full bg-[#525A43]/90 text-white text-[10px] font-bold tracking-wide shadow-sm backdrop-blur-xs">
+                            {cat.badge || 'Remedy Folder'}
+                          </span>
+                        </div>
+
+                        {/* Product Count Pill */}
+                        <div className="absolute top-3 right-3">
+                          <span className="px-2.5 py-0.5 rounded-full bg-white/95 text-[#2F3428] text-[10px] font-extrabold shadow-sm">
+                            {prodCount} Remedies
+                          </span>
+                        </div>
+
+                        {/* Title overlay */}
+                        <div className="absolute bottom-3 left-3 right-3 text-white">
+                          <h3 className="text-base font-extrabold font-serif leading-tight">
+                            {cat.name}
+                          </h3>
+                          <p className="text-xs text-[#A1A696] font-serif mt-0.5">
+                            {cat.urduName}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Content details */}
+                      <div className="p-4 space-y-3 text-xs">
+                        {/* Folder Type */}
+                        <div className="bg-[#525A43]/5 border border-[#525A43]/15 rounded-xl p-2.5">
+                          <span className="text-[10px] uppercase font-bold text-[#525A43] block">
+                            Classification Type (فولڈر قسم)
+                          </span>
+                          <span className="font-semibold text-stone-800 text-[11px] block mt-0.5">
+                            {cat.folderType || 'Specialized Unani Collection'}
+                          </span>
+                          {cat.folderTypeUrdu && (
+                            <span className="text-[10px] text-[#525A43] font-serif block mt-0.5">
+                              {cat.folderTypeUrdu}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Focus Area */}
+                        {cat.focusArea && (
+                          <div>
+                            <span className="text-[10px] uppercase font-bold text-stone-500 block">
+                              Focus Area / Clinical Scope
+                            </span>
+                            <p className="text-stone-700 text-[11px] mt-0.5 line-clamp-2">
+                              {cat.focusArea}
+                            </p>
+                          </div>
+                        )}
+
+                        {/* Description */}
+                        {cat.description && (
+                          <div>
+                            <span className="text-[10px] uppercase font-bold text-stone-500 block">
+                              Description
+                            </span>
+                            <p className="text-stone-600 text-[11px] mt-0.5 line-clamp-2">
+                              {cat.description}
+                            </p>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Footer Actions */}
+                    <div className="px-4 py-3 bg-stone-50 border-t border-stone-100 flex items-center justify-between gap-2">
+                      <span className="text-[10px] text-stone-400 font-mono truncate max-w-[120px]">
+                        ID: {cat.id}
+                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <button
+                          onClick={() => handleEditCategory(cat)}
+                          className="px-3 py-1.5 rounded-lg bg-[#525A43] hover:bg-[#3F4633] text-white font-bold text-xs flex items-center gap-1.5 transition-colors"
+                        >
+                          <Pencil className="w-3.5 h-3.5" />
+                          <span>Edit</span>
+                        </button>
+                        <button
+                          onClick={() => handleDeleteCategory(cat.id, cat.name)}
+                          className="p-1.5 rounded-lg bg-red-50 hover:bg-red-100 text-red-600 transition-colors"
+                          title="Delete Category"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+          </div>
+        </div>
+      )}
+
       {/* TAB 3: CUSTOMER MESSAGES */}
       {adminTab === 'messages' && (
         <div className="bg-white rounded-3xl border border-stone-200 shadow-sm p-6 space-y-4">
@@ -1093,11 +1481,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     onChange={(e) => setNewProdCategory(e.target.value)}
                     className="w-full p-2 border border-stone-300 rounded-lg text-xs"
                   >
-                    <option value="Tib-e-Nabvi Special">Tib-e-Nabvi Special</option>
-                    <option value="Immunity & Daily Wellness">Immunity & Daily Wellness</option>
-                    <option value="Heart & Digestion">Heart & Digestion</option>
-                    <option value="Joint Care & Oils">Joint Care & Oils</option>
-                    <option value="Herbal Teas & Extracts">Herbal Teas & Extracts</option>
+                    {categoriesList.map((cat) => (
+                      <option key={cat.id || cat.name} value={cat.name}>
+                        {cat.name} {cat.urduName ? `(${cat.urduName})` : ''}
+                      </option>
+                    ))}
                   </select>
                 </div>
               </div>
@@ -1167,6 +1555,179 @@ export const AdminView: React.FC<AdminViewProps> = ({
             </form>
           </div>
         </div>
+        </div>
+      {/* ADD / EDIT CATEGORY MODAL */}
+      {showCategoryModal && (
+        <div className="fixed inset-0 h-dvh z-50 bg-[#2F3428]/70 backdrop-blur-sm overflow-y-auto">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-3xl max-w-lg w-full p-6 space-y-4 border border-stone-200 shadow-2xl relative">
+              <button
+                onClick={closeCategoryModal}
+                className="absolute top-4 right-4 p-2 rounded-full hover:bg-stone-100 transition-colors"
+                aria-label="Close modal"
+              >
+                <X className="w-5 h-5 text-stone-500" />
+              </button>
+
+              <h3 className="text-lg font-bold font-serif text-[#2F3428] border-b pb-2 flex items-center gap-2">
+                <Layers className="w-5 h-5 text-[#525A43]" />
+                <span>{editingCategory ? 'Update Category Details' : 'Add New Category'}</span>
+              </h3>
+
+              <form onSubmit={handleSaveCategory} className="space-y-3.5 text-xs">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-[#2F3428] mb-1">
+                      Category Name (English) *
+                    </label>
+                    <input
+                      type="text"
+                      required
+                      value={catName}
+                      onChange={(e) => setCatName(e.target.value)}
+                      placeholder="e.g. Skin & Hair Care"
+                      className="w-full p-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#2F3428] mb-1">
+                      Name in Urdu (اردو نام)
+                    </label>
+                    <input
+                      type="text"
+                      value={catUrduName}
+                      onChange={(e) => setCatUrduName(e.target.value)}
+                      placeholder="e.g. امراضِ جلد و بال"
+                      className="w-full p-2.5 border border-stone-300 rounded-xl text-xs font-serif focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                  <div>
+                    <label className="block font-bold text-[#2F3428] mb-1">
+                      Badge / Tag (لیبل)
+                    </label>
+                    <input
+                      type="text"
+                      value={catBadge}
+                      onChange={(e) => setCatBadge(e.target.value)}
+                      placeholder="e.g. Daily Tonic, Skin Care"
+                      className="w-full p-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                    />
+                  </div>
+
+                  <div>
+                    <label className="block font-bold text-[#2F3428] mb-1">
+                      Classification Type Urdu (طبی نوعیت)
+                    </label>
+                    <input
+                      type="text"
+                      value={catFolderTypeUrdu}
+                      onChange={(e) => setCatFolderTypeUrdu(e.target.value)}
+                      placeholder="e.g. جلد و بالوں کی حفاظت"
+                      className="w-full p-2.5 border border-stone-300 rounded-xl text-xs font-serif focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                    />
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#2F3428] mb-1">
+                    Folder Classification Type (English & Urdu description)
+                  </label>
+                  <input
+                    type="text"
+                    value={catFolderType}
+                    onChange={(e) => setCatFolderType(e.target.value)}
+                    placeholder="e.g. Dermatological Therapy & Hair Restoration (جلد و بال)"
+                    className="w-full p-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#2F3428] mb-1">
+                    Focus Area / Clinical Scope (علاج کا دائرہ کار)
+                  </label>
+                  <input
+                    type="text"
+                    value={catFocusArea}
+                    onChange={(e) => setCatFocusArea(e.target.value)}
+                    placeholder="e.g. Hair fall, dandruff, dry scalp, acne & skin glow"
+                    className="w-full p-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                  />
+                </div>
+
+                <div>
+                  <label className="block font-bold text-[#2F3428] mb-1">
+                    Description (تفصیل)
+                  </label>
+                  <textarea
+                    rows={2}
+                    value={catDescription}
+                    onChange={(e) => setCatDescription(e.target.value)}
+                    placeholder="Brief description of the remedies and herbs contained in this category..."
+                    className="w-full p-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#A1A696] focus:outline-none resize-none"
+                  />
+                </div>
+
+                {/* Category Image */}
+                <div>
+                  <label className="block font-bold text-[#2F3428] mb-1">
+                    Category Cover Image
+                  </label>
+                  <div className="flex items-center gap-2 mb-2">
+                    <label className={`flex-1 px-3 py-2 border-2 border-dashed border-[#525A43] rounded-xl hover:bg-stone-50 cursor-pointer transition-colors flex items-center justify-center gap-2 text-xs font-semibold text-[#525A43] ${isUploadingCatImage ? 'opacity-50 pointer-events-none' : ''}`}>
+                      <Upload className="w-4 h-4" />
+                      <span>{isUploadingCatImage ? 'Uploading Image...' : 'Upload Image from PC'}</span>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        onChange={handleCatImageUpload}
+                        className="hidden"
+                        disabled={isUploadingCatImage}
+                      />
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    value={catImageUrl}
+                    onChange={(e) => setCatImageUrl(e.target.value)}
+                    placeholder="Or enter Image URL: /products/LiverBoost.jpeg or https://..."
+                    className="w-full p-2.5 border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                  />
+                  {catImageUrl && (
+                    <div className="mt-2 relative w-20 h-20 rounded-xl overflow-hidden border border-stone-300 shadow-xs">
+                      <img
+                        src={catImageUrl}
+                        alt="Preview"
+                        className="w-full h-full object-cover"
+                        onError={(e) => {
+                          e.currentTarget.src = '/products/LiverBoost.jpeg';
+                        }}
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="pt-3 border-t flex justify-end gap-2">
+                  <button
+                    type="button"
+                    onClick={closeCategoryModal}
+                    className="px-4 py-2.5 rounded-xl border border-stone-300 font-bold text-stone-600 hover:bg-stone-50 transition-colors"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="px-5 py-2.5 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white font-bold transition-all shadow-md active:scale-95"
+                  >
+                    {editingCategory ? 'Save Changes' : 'Create Category'}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
         </div>
       )}
 

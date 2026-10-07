@@ -1,8 +1,66 @@
-import { Product, BlogPost, TeamMember, FAQItem } from '../types';
+import { Product, BlogPost, TeamMember, FAQItem, CategoryFolderInfo } from '../types';
 
 // All products removed - store is now empty
 // Add your own products through Admin Panel
 export const INITIAL_PRODUCTS: Product[] = [];
+
+export const INITIAL_CATEGORIES: CategoryFolderInfo[] = [
+  {
+    id: 'tib-e-nabvi',
+    name: 'Tib-e-Nabvi Special',
+    urduName: 'طبِ نبوی خاص',
+    folderType: 'Prophetic Medicine & Sunnah Formulations (نبوی و اسلامی طریقہ علاج)',
+    folderTypeUrdu: 'سنتِ نبوی و اسلامی علاج',
+    badge: 'Prophetic Cures',
+    description: 'Pure cold-pressed Kalonji oil, Sidr honey blends, Talbina, and classical prophetic remedies.',
+    focusArea: 'Immune revival, respiratory relief & prophetic sunnah cures',
+    imageUrl: 'https://images.unsplash.com/photo-1608571423902-eed4a5ad8108?auto=format&fit=crop&w=600&q=80'
+  },
+  {
+    id: 'heart-digestion',
+    name: 'Heart & Digestion',
+    urduName: 'امراضِ قلب و معدہ',
+    folderType: 'Cardiovascular & Gastrointestinal Care (ہاضمہ، جگر اور امراضِ قلب)',
+    folderTypeUrdu: 'ہاضمہ، جگر و امراضِ قلب',
+    badge: 'Internal Health',
+    description: 'LiverBoost, Gestrocare syrups, digestive enzyme formulas, and natural heart circulation tonics.',
+    focusArea: 'Fatty liver, acidity, cholesterol, gastric relief & vascular circulation',
+    imageUrl: '/products/LiverBoost.jpeg'
+  },
+  {
+    id: 'immunity-wellness',
+    name: 'Immunity & Daily Wellness',
+    urduName: 'قوتِ مدافعت و عمومی صحت',
+    folderType: 'Immune Defense & Vitality Restoration (قوتِ مدافعت و بحالیِ توانائی)',
+    folderTypeUrdu: 'قوتِ مدافعت و بحالیِ توانائی',
+    badge: 'Vitality Tonic',
+    description: 'Herbal multivitamins, natural stamina tonics, and restorative compounds for daily energy and physical vitality.',
+    focusArea: 'Daily stamina, physical weakness, fatigue & natural immune defense',
+    imageUrl: '/products/jawahri.jpeg'
+  },
+  {
+    id: 'joint-care',
+    name: 'Joint Care & Oils',
+    urduName: 'جوڑوں کے امراض و روغنیات',
+    folderType: 'Musculoskeletal Therapy & Pain Relief (جوڑوں، اعصاب و درد کش روغنیات)',
+    folderTypeUrdu: 'جوڑوں، اعصاب و درد کش روغنیات',
+    badge: 'Pain Relief',
+    description: 'Roghan-e-Balsan, Zafrani oils, and warming herbal liniments for joint flexibility, arthritis, and nerves.',
+    focusArea: 'Arthritis, back pain, sciatica, knee stiffness & nerve soothing',
+    imageUrl: '/products/zafrani.jpeg'
+  },
+  {
+    id: 'teas-extracts',
+    name: 'Herbal Teas & Extracts',
+    urduName: 'ہربل چائے و عرقیات',
+    folderType: 'Botanical Decoctions & Pure Distillates (خالص عرقیات، ہربل قہوہ و جوشاندہ)',
+    folderTypeUrdu: 'خالص عرقیات و ہربل قہوہ',
+    badge: 'Pure Extracts',
+    description: 'SlimAura botanical teas, detox infusions, and traditionally hydro-distilled pure botanical essences.',
+    focusArea: 'Weight management, metabolic detox & deep organic cleansing',
+    imageUrl: '/products/SlimAura.jpeg'
+  }
+];
 
 export const INITIAL_BLOGS: BlogPost[] = [
   {

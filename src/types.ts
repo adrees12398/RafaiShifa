@@ -1,5 +1,17 @@
 export type NavTab = 'home' | 'blog' | 'help' | 'team' | 'admin';
 
+export interface CategoryFolderInfo {
+  id: string;
+  name: string;
+  urduName: string;
+  folderType: string;
+  folderTypeUrdu: string;
+  badge: string;
+  description: string;
+  focusArea: string;
+  imageUrl: string;
+}
+
 export interface Product {
   id: string;
   name: string;

@@ -4,8 +4,8 @@
  */
 
 import React, { useState, useEffect } from 'react';
-import { NavTab, Product, CartItem } from './types';
-import { getStoredProducts, subscribeProducts } from './lib/firebase';
+import { NavTab, Product, CartItem, CategoryFolderInfo } from './types';
+import { getStoredProducts, subscribeProducts, getStoredCategories, subscribeCategories } from './lib/firebase';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { LocationMap } from './components/LocationMap';
@@ -39,6 +39,7 @@ export default function App() {
     return 'home';
   });
   const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<CategoryFolderInfo[]>([]);
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -48,9 +49,17 @@ export default function App() {
   // Load Initial Products & Stored Cart, then sync catalog from Firestore
   useEffect(() => {
     setProducts(getStoredProducts());
-    const unsubscribe = subscribeProducts((cloudProducts) => {
+    const unsubscribeProducts = subscribeProducts((cloudProducts) => {
       setProducts(cloudProducts);
     });
+
+    // Load categories from local cache, then sync from Firestore
+    const localCats = getStoredCategories();
+    if (localCats.length > 0) setCategories(localCats);
+    const unsubscribeCategories = subscribeCategories((cloudCats) => {
+      if (cloudCats.length > 0) setCategories(cloudCats);
+    });
+
     try {
       const savedCart = localStorage.getItem('rafaishifa_cart_v1');
       if (savedCart) {
@@ -59,7 +68,10 @@ export default function App() {
     } catch (e) {
       console.error('Cart load error:', e);
     }
-    return unsubscribe;
+    return () => {
+      unsubscribeProducts();
+      unsubscribeCategories();
+    };
   }, []);
 
   // Save Cart to localStorage on changes
@@ -174,6 +186,7 @@ export default function App() {
         {activeTab === 'home' && (
           <HomeView
             products={products}
+            categories={categories}
             onAddToCart={handleAddToCart}
             onQuickView={(p) => setSelectedProduct(p)}
             cartProductIds={cartProductIds}
@@ -197,6 +210,8 @@ export default function App() {
             setIsAdminLoggedIn={setIsAdminLoggedIn}
             products={products}
             setProducts={setProducts}
+            categories={categories}
+            setCategories={setCategories}
             onLogout={handleAdminLogout}
           />
         )}
