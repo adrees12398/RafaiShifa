@@ -43,7 +43,8 @@ import {
   Pencil,
   Image as ImageIcon,
   Upload,
-  Layers
+  Layers,
+  Sparkles
 } from 'lucide-react';
 
 interface AdminViewProps {
@@ -101,7 +102,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
   const [newProdName, setNewProdName] = useState('');
   const [newProdUrdu, setNewProdUrdu] = useState('');
   const [newProdPrice, setNewProdPrice] = useState<number>(500);
-  const [newProdCategory, setNewProdCategory] = useState('Tib-e-Nabvi Special');
+  const [newProdCategory, setNewProdCategory] = useState('');
+  const [newProdCategoryUrdu, setNewProdCategoryUrdu] = useState('');
   const [newProdDesc, setNewProdDesc] = useState('');
   const [newProdDosage, setNewProdDosage] = useState('1 teaspoon twice daily');
   const [newProdImageUrl, setNewProdImageUrl] = useState('');
@@ -131,11 +133,6 @@ export const AdminView: React.FC<AdminViewProps> = ({
   // Quick Add Category State (Inline Bar)
   const [quickCatName, setQuickCatName] = useState('');
   const [quickCatUrdu, setQuickCatUrdu] = useState('');
-
-  // Product Modal Custom Category on-the-fly State
-  const [isCustomCategoryMode, setIsCustomCategoryMode] = useState(false);
-  const [customCategoryInput, setCustomCategoryInput] = useState('');
-  const [customCategoryUrduInput, setCustomCategoryUrduInput] = useState('');
 
   // Category Modal State
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -268,6 +265,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdUrdu(p.urduName || '');
     setNewProdPrice(p.price);
     setNewProdCategory(p.category);
+    setNewProdCategoryUrdu('');
     setNewProdDesc(p.description);
     setNewProdDosage(p.dosage);
     setNewProdImageUrl(p.imageUrl);
@@ -283,9 +281,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdDesc('');
     setNewProdDosage('1 teaspoon twice daily');
     setNewProdImageUrl('');
-    setIsCustomCategoryMode(false);
-    setCustomCategoryInput('');
-    setCustomCategoryUrduInput('');
+    setNewProdCategory('');
+    setNewProdCategoryUrdu('');
   };
 
   const openAddProductModal = () => {
@@ -294,12 +291,10 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdUrdu('');
     setNewProdPrice(500);
     setNewProdCategory(categoriesList[0]?.name || 'Tib-e-Nabvi Special');
+    setNewProdCategoryUrdu('');
     setNewProdDesc('');
     setNewProdDosage('1 teaspoon twice daily');
     setNewProdImageUrl('');
-    setIsCustomCategoryMode(false);
-    setCustomCategoryInput('');
-    setCustomCategoryUrduInput('');
     setShowAddProductModal(true);
   };
 
@@ -307,29 +302,25 @@ export const AdminView: React.FC<AdminViewProps> = ({
     e.preventDefault();
     if (!newProdName.trim()) return;
 
-    // Resolve category name (either selected existing or custom typed by admin)
-    let finalCategory = newProdCategory;
-    if (isCustomCategoryMode && customCategoryInput.trim()) {
-      const customName = customCategoryInput.trim();
-      finalCategory = customName;
+    // Resolve category name (admin can freely type ANY random category or pick one)
+    const finalCategory = newProdCategory.trim() || 'General';
 
-      // Auto-register new category if it doesn't already exist in categoriesList
-      const existing = categoriesList.find((c) => c.name.toLowerCase() === customName.toLowerCase());
-      if (!existing) {
-        const autoCat: CategoryFolderInfo = {
-          id: customName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
-          name: customName,
-          urduName: customCategoryUrduInput.trim() || 'خصوصی طبی زمرہ',
-          folderType: `Specialized Herbal Formulation (${customName})`,
-          folderTypeUrdu: 'خصوصی طبی شعبہ',
-          badge: 'Custom Category',
-          description: `Authentic Unani herbal preparations and remedies filed under ${customName}.`,
-          focusArea: 'Targeted wellness and specialized treatment',
-          imageUrl: newProdImageUrl.trim() || '/products/LiverBoost.jpeg'
-        };
-        const updatedCats = [...categoriesList, autoCat];
-        updateCategories(updatedCats);
-      }
+    // Auto-register new category if it doesn't already exist in categoriesList
+    const existing = categoriesList.find((c) => c.name.toLowerCase() === finalCategory.toLowerCase());
+    if (!existing) {
+      const autoCat: CategoryFolderInfo = {
+        id: finalCategory.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+        name: finalCategory,
+        urduName: newProdCategoryUrdu.trim() || 'خصوصی طبی زمرہ',
+        folderType: `Specialized Herbal Formulation (${finalCategory})`,
+        folderTypeUrdu: 'خصوصی طبی شعبہ',
+        badge: 'Custom Category',
+        description: `Authentic Unani herbal preparations and remedies filed under ${finalCategory}.`,
+        focusArea: 'Targeted wellness and specialized treatment',
+        imageUrl: newProdImageUrl.trim() || '/products/LiverBoost.jpeg'
+      };
+      const updatedCats = [...categoriesList, autoCat];
+      updateCategories(updatedCats);
     }
 
     // EDIT: update existing product and save
@@ -1605,65 +1596,68 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 </div>
 
                 <div>
-                  <div className="flex items-center justify-between mb-1">
-                    <label className="block font-bold text-[#2F3428]">Category</label>
-                    <button
-                      type="button"
-                      onClick={() => setIsCustomCategoryMode(!isCustomCategoryMode)}
-                      className="text-[10px] font-bold text-[#525A43] hover:underline"
-                    >
-                      {isCustomCategoryMode ? '← Pick Existing' : '+ Type New Category'}
-                    </button>
-                  </div>
-                  {!isCustomCategoryMode ? (
-                    <select
+                  <label className="block font-bold text-[#2F3428] mb-1">
+                    Category (اپنی مرضی کی کیٹیگری لکھیں یا منتخب کریں) *
+                  </label>
+                  <div className="relative">
+                    <input
+                      type="text"
+                      required
+                      list="category-suggestions-list"
                       value={newProdCategory}
-                      onChange={(e) => {
-                        if (e.target.value === '__add_new__') {
-                          setIsCustomCategoryMode(true);
-                        } else {
-                          setNewProdCategory(e.target.value);
-                        }
-                      }}
-                      className="w-full p-2 border border-stone-300 rounded-lg text-xs bg-white"
-                    >
+                      onChange={(e) => setNewProdCategory(e.target.value)}
+                      placeholder="Type ANY category of your choice (e.g. Skin Care, Hair Oil, etc.)"
+                      className="w-full p-2.5 border-2 border-[#525A43] rounded-xl text-xs bg-white text-[#2F3428] font-medium focus:ring-2 focus:ring-[#A1A696] focus:outline-none placeholder-stone-400"
+                    />
+                    <datalist id="category-suggestions-list">
                       {categoriesList.map((cat) => (
                         <option key={cat.id || cat.name} value={cat.name}>
                           {cat.name} {cat.urduName ? `(${cat.urduName})` : ''}
                         </option>
                       ))}
-                      <option value="__add_new__" className="font-bold text-[#525A43]">
-                        + Type New Custom Category...
-                      </option>
-                    </select>
-                  ) : (
-                    <input
-                      type="text"
-                      required
-                      value={customCategoryInput}
-                      onChange={(e) => setCustomCategoryInput(e.target.value)}
-                      placeholder="Type your category (e.g. Skin Care)"
-                      className="w-full p-2 border-2 border-[#525A43] rounded-lg text-xs bg-white focus:outline-none"
-                    />
-                  )}
+                    </datalist>
+                  </div>
+
+                  {/* Quick Select Chips */}
+                  <div className="flex flex-wrap items-center gap-1 mt-1.5">
+                    <span className="text-[10px] text-stone-500 font-medium">Suggestions:</span>
+                    {categoriesList.slice(0, 6).map((cat) => (
+                      <button
+                        key={cat.name}
+                        type="button"
+                        onClick={() => setNewProdCategory(cat.name)}
+                        className={`px-2 py-0.5 rounded-md text-[10px] transition-all font-medium border ${
+                          newProdCategory.toLowerCase() === cat.name.toLowerCase()
+                            ? 'bg-[#525A43] text-white border-[#525A43] shadow-xs'
+                            : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border-stone-200'
+                        }`}
+                      >
+                        {cat.name}
+                      </button>
+                    ))}
+                  </div>
                 </div>
               </div>
 
-              {isCustomCategoryMode && (
-                <div className="p-2.5 bg-[#525A43]/5 border border-[#525A43]/20 rounded-xl space-y-1.5">
-                  <span className="text-[10px] font-bold text-[#525A43] block">
-                    ✨ Adding New Category of Your Choice: "{customCategoryInput || 'New Category'}"
-                  </span>
-                  <input
-                    type="text"
-                    value={customCategoryUrduInput}
-                    onChange={(e) => setCustomCategoryUrduInput(e.target.value)}
-                    placeholder="Urdu Name for this Category (Optional e.g. امراضِ جلد)"
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs font-serif bg-white"
-                  />
-                  <p className="text-[10px] text-stone-500">
-                    This new category will automatically be created in the store and appear on the home screen!
+              {/* If user types a new category not in categoriesList, let them provide optional Urdu name */}
+              {newProdCategory.trim() && !categoriesList.some((c) => c.name.toLowerCase() === newProdCategory.trim().toLowerCase()) && (
+                <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-2xl space-y-1.5">
+                  <div className="flex items-center gap-1.5 text-emerald-900 text-xs font-bold font-serif">
+                    <Sparkles className="w-4 h-4 text-emerald-600" />
+                    <span>✨ New Category Detected: "{newProdCategory.trim()}"</span>
+                  </div>
+                  <p className="text-[10px] text-emerald-700">
+                    This new category will automatically be created and shown as a collection card on the home screen!
                   </p>
+                  <div>
+                    <input
+                      type="text"
+                      value={newProdCategoryUrdu}
+                      onChange={(e) => setNewProdCategoryUrdu(e.target.value)}
+                      placeholder="Category Name in Urdu (Optional e.g. امراضِ جلد و بال)"
+                      className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-serif text-emerald-950 focus:outline-none"
+                    />
+                  </div>
                 </div>
               )}
 
