@@ -111,6 +111,13 @@ export const AdminView: React.FC<AdminViewProps> = ({
     return (propCategories && propCategories.length > 0) ? propCategories : getStoredCategories();
   });
 
+  // Keep internal categories state synced whenever propCategories changes from cloud
+  useEffect(() => {
+    if (propCategories && propCategories.length > 0) {
+      setInternalCategories(propCategories);
+    }
+  }, [propCategories]);
+
   const categoriesList = (propCategories && propCategories.length > 0) ? propCategories : internalCategories;
 
   const updateCategories = (newCats: CategoryFolderInfo[]) => {
@@ -120,6 +127,15 @@ export const AdminView: React.FC<AdminViewProps> = ({
     }
     saveCategoriesToDb(newCats);
   };
+
+  // Quick Add Category State (Inline Bar)
+  const [quickCatName, setQuickCatName] = useState('');
+  const [quickCatUrdu, setQuickCatUrdu] = useState('');
+
+  // Product Modal Custom Category on-the-fly State
+  const [isCustomCategoryMode, setIsCustomCategoryMode] = useState(false);
+  const [customCategoryInput, setCustomCategoryInput] = useState('');
+  const [customCategoryUrduInput, setCustomCategoryUrduInput] = useState('');
 
   // Category Modal State
   const [showCategoryModal, setShowCategoryModal] = useState(false);
@@ -267,6 +283,9 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdDesc('');
     setNewProdDosage('1 teaspoon twice daily');
     setNewProdImageUrl('');
+    setIsCustomCategoryMode(false);
+    setCustomCategoryInput('');
+    setCustomCategoryUrduInput('');
   };
 
   const openAddProductModal = () => {
@@ -278,12 +297,40 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdDesc('');
     setNewProdDosage('1 teaspoon twice daily');
     setNewProdImageUrl('');
+    setIsCustomCategoryMode(false);
+    setCustomCategoryInput('');
+    setCustomCategoryUrduInput('');
     setShowAddProductModal(true);
   };
 
   const handleSubmitProduct = (e: React.FormEvent) => {
     e.preventDefault();
     if (!newProdName.trim()) return;
+
+    // Resolve category name (either selected existing or custom typed by admin)
+    let finalCategory = newProdCategory;
+    if (isCustomCategoryMode && customCategoryInput.trim()) {
+      const customName = customCategoryInput.trim();
+      finalCategory = customName;
+
+      // Auto-register new category if it doesn't already exist in categoriesList
+      const existing = categoriesList.find((c) => c.name.toLowerCase() === customName.toLowerCase());
+      if (!existing) {
+        const autoCat: CategoryFolderInfo = {
+          id: customName.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+          name: customName,
+          urduName: customCategoryUrduInput.trim() || 'خصوصی طبی زمرہ',
+          folderType: `Specialized Herbal Formulation (${customName})`,
+          folderTypeUrdu: 'خصوصی طبی شعبہ',
+          badge: 'Custom Category',
+          description: `Authentic Unani herbal preparations and remedies filed under ${customName}.`,
+          focusArea: 'Targeted wellness and specialized treatment',
+          imageUrl: newProdImageUrl.trim() || '/products/LiverBoost.jpeg'
+        };
+        const updatedCats = [...categoriesList, autoCat];
+        updateCategories(updatedCats);
+      }
+    }
 
     // EDIT: update existing product and save
     if (editingProduct) {
@@ -297,7 +344,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
               price: newPrice,
               originalPrice:
                 p.originalPrice && p.originalPrice > newPrice ? p.originalPrice : newPrice + 200,
-              category: newProdCategory,
+              category: finalCategory,
               description: newProdDesc.trim() || p.description,
               dosage: newProdDosage.trim() || p.dosage,
               imageUrl: newProdImageUrl.trim() || p.imageUrl
@@ -320,7 +367,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
       urduName: newProdUrdu.trim() || 'یونانی دوا',
       price: Number(newProdPrice),
       originalPrice: Number(newProdPrice) + 200,
-      category: newProdCategory,
+      category: finalCategory,
       description: newProdDesc.trim() || 'Pure organic herbal extract for wellness.',
       fullDescription: newProdDesc.trim() || 'Prepared according to authentic Unani Tib standards.',
       dosage: newProdDosage.trim() || 'As directed by Hakeem.',
@@ -339,12 +386,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     // Save locally + sync to Firestore (centralized)
     saveStoredProducts(updated);
 
-    setShowAddProductModal(false);
-    setNewProdName('');
-    setNewProdUrdu('');
-    setNewProdPrice(500);
-    setNewProdDesc('');
-    setNewProdImageUrl('');
+    closeProductModal();
   };
 
   const handleDeleteProduct = (productId: string) => {
@@ -372,6 +414,39 @@ export const AdminView: React.FC<AdminViewProps> = ({
   // ─────────────────────────────────────────────────────────────────────────────
   // CATEGORIES CRUD HANDLERS
   // ─────────────────────────────────────────────────────────────────────────────
+
+  // Inline Quick Add (1-Click)
+  const handleQuickAddCategory = (e?: React.FormEvent) => {
+    if (e) e.preventDefault();
+    const trimmed = quickCatName.trim();
+    if (!trimmed) {
+      alert('Please enter a Category Name.');
+      return;
+    }
+
+    if (categoriesList.some((c) => c.name.toLowerCase() === trimmed.toLowerCase())) {
+      alert(`Category "${trimmed}" already exists.`);
+      return;
+    }
+
+    const newCat: CategoryFolderInfo = {
+      id: trimmed.toLowerCase().replace(/[^a-z0-9]+/g, '-') + '-' + Date.now(),
+      name: trimmed,
+      urduName: quickCatUrdu.trim() || 'خصوصی طبی زمرہ',
+      folderType: `Specialized Herbal Formulation (${trimmed})`,
+      folderTypeUrdu: 'خصوصی طبی شعبہ',
+      badge: 'Custom Category',
+      description: `Authentic Unani herbal preparations and remedies filed under ${trimmed}.`,
+      focusArea: 'Targeted wellness and specialized treatment',
+      imageUrl: '/products/LiverBoost.jpeg'
+    };
+
+    const updated = [...categoriesList, newCat];
+    updateCategories(updated);
+    setQuickCatName('');
+    setQuickCatUrdu('');
+    alert(`Category "${trimmed}" added successfully! It is now live on the home screen.`);
+  };
 
   const openAddCategoryModal = () => {
     setEditingCategory(null);
@@ -1080,6 +1155,14 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 {isMigratingImages ? 'Fixing Images...' : 'Fix Old Images'}
               </button>
               <button
+                onClick={openAddCategoryModal}
+                className="px-3.5 py-2.5 rounded-xl bg-white border-2 border-[#525A43] text-[#525A43] font-bold text-xs flex items-center gap-1.5 hover:bg-stone-50 shadow-xs transition-colors"
+                title="Add a custom category to the store"
+              >
+                <Layers className="w-4 h-4" />
+                <span>+ Add Category</span>
+              </button>
+              <button
                 onClick={openAddProductModal}
                 className="px-4 py-2.5 rounded-xl bg-[#525A43] text-white font-bold text-xs flex items-center gap-2 hover:bg-[#3F4633] shadow-md"
               >
@@ -1178,6 +1261,53 @@ export const AdminView: React.FC<AdminViewProps> = ({
               </button>
             </div>
           </div>
+
+          {/* Quick Add Category Bar (Inline 1-Click) */}
+          <form
+            onSubmit={handleQuickAddCategory}
+            className="bg-[#525A43]/5 border-2 border-dashed border-[#525A43]/30 rounded-2xl p-4 space-y-2.5"
+          >
+            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-1">
+              <span className="font-bold text-[#2F3428] text-xs flex items-center gap-1.5 font-serif">
+                <Sparkles className="w-4 h-4 text-[#525A43]" />
+                <span>Quick Add Any Category of Your Choice (اپنی مرضی کا نیا زمرہ شامل کریں)</span>
+              </span>
+              <span className="text-[10px] text-stone-500 font-medium">
+                Immediately live on home screen and shop categories
+              </span>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-12 gap-2">
+              <div className="sm:col-span-5">
+                <input
+                  type="text"
+                  required
+                  value={quickCatName}
+                  onChange={(e) => setQuickCatName(e.target.value)}
+                  placeholder="Category Name (e.g. Skin Care, Hair Growth, Men Health)"
+                  className="w-full p-2.5 bg-white border border-stone-300 rounded-xl text-xs focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                />
+              </div>
+              <div className="sm:col-span-4">
+                <input
+                  type="text"
+                  value={quickCatUrdu}
+                  onChange={(e) => setQuickCatUrdu(e.target.value)}
+                  placeholder="Urdu Name (optional e.g. امراضِ جلد)"
+                  className="w-full p-2.5 bg-white border border-stone-300 rounded-xl text-xs font-serif focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                />
+              </div>
+              <div className="sm:col-span-3">
+                <button
+                  type="submit"
+                  className="w-full py-2.5 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white font-bold text-xs flex items-center justify-center gap-2 shadow-sm transition-all active:scale-95"
+                >
+                  <Plus className="w-4 h-4" />
+                  <span>+ Add Category</span>
+                </button>
+              </div>
+            </div>
+          </form>
 
           {/* Search bar for categories */}
           <div className="relative max-w-md">
@@ -1462,7 +1592,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 <div>
                   <label className="block font-bold text-[#2F3428] mb-1">Price (Rs.)</label>
                   <input
@@ -1475,20 +1605,67 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 </div>
 
                 <div>
-                  <label className="block font-bold text-[#2F3428] mb-1">Category</label>
-                  <select
-                    value={newProdCategory}
-                    onChange={(e) => setNewProdCategory(e.target.value)}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
-                  >
-                    {categoriesList.map((cat) => (
-                      <option key={cat.id || cat.name} value={cat.name}>
-                        {cat.name} {cat.urduName ? `(${cat.urduName})` : ''}
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="block font-bold text-[#2F3428]">Category</label>
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomCategoryMode(!isCustomCategoryMode)}
+                      className="text-[10px] font-bold text-[#525A43] hover:underline"
+                    >
+                      {isCustomCategoryMode ? '← Pick Existing' : '+ Type New Category'}
+                    </button>
+                  </div>
+                  {!isCustomCategoryMode ? (
+                    <select
+                      value={newProdCategory}
+                      onChange={(e) => {
+                        if (e.target.value === '__add_new__') {
+                          setIsCustomCategoryMode(true);
+                        } else {
+                          setNewProdCategory(e.target.value);
+                        }
+                      }}
+                      className="w-full p-2 border border-stone-300 rounded-lg text-xs bg-white"
+                    >
+                      {categoriesList.map((cat) => (
+                        <option key={cat.id || cat.name} value={cat.name}>
+                          {cat.name} {cat.urduName ? `(${cat.urduName})` : ''}
+                        </option>
+                      ))}
+                      <option value="__add_new__" className="font-bold text-[#525A43]">
+                        + Type New Custom Category...
                       </option>
-                    ))}
-                  </select>
+                    </select>
+                  ) : (
+                    <input
+                      type="text"
+                      required
+                      value={customCategoryInput}
+                      onChange={(e) => setCustomCategoryInput(e.target.value)}
+                      placeholder="Type your category (e.g. Skin Care)"
+                      className="w-full p-2 border-2 border-[#525A43] rounded-lg text-xs bg-white focus:outline-none"
+                    />
+                  )}
                 </div>
               </div>
+
+              {isCustomCategoryMode && (
+                <div className="p-2.5 bg-[#525A43]/5 border border-[#525A43]/20 rounded-xl space-y-1.5">
+                  <span className="text-[10px] font-bold text-[#525A43] block">
+                    ✨ Adding New Category of Your Choice: "{customCategoryInput || 'New Category'}"
+                  </span>
+                  <input
+                    type="text"
+                    value={customCategoryUrduInput}
+                    onChange={(e) => setCustomCategoryUrduInput(e.target.value)}
+                    placeholder="Urdu Name for this Category (Optional e.g. امراضِ جلد)"
+                    className="w-full p-2 border border-stone-300 rounded-lg text-xs font-serif bg-white"
+                  />
+                  <p className="text-[10px] text-stone-500">
+                    This new category will automatically be created in the store and appear on the home screen!
+                  </p>
+                </div>
+              )}
 
               <div>
                 <label className="block font-bold text-[#2F3428] mb-1">Product Image</label>

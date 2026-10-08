@@ -539,8 +539,11 @@ function cacheCategoriesLocally(cats: CategoryFolderInfo[]): void {
   }
 }
 
+let lastCategoriesSaveAt = 0;
+
 /** Persist categories to localStorage AND Firestore (admin operations). */
 export async function saveCategoriesToDb(cats: CategoryFolderInfo[]): Promise<void> {
+  lastCategoriesSaveAt = Date.now();
   cacheCategoriesLocally(cats);
   try {
     const ref = doc(db, CATEGORIES_CATALOG_DOC);
@@ -565,6 +568,12 @@ export function subscribeCategories(
     unsubscribe = onSnapshot(
       ref,
       (snapshot) => {
+        // Skip snapshot if local save just occurred to prevent race condition overwrite
+        if (Date.now() - lastCategoriesSaveAt < 4000) {
+          console.log('⏭️ Skipping categories cloud snapshot - local save just happened');
+          return;
+        }
+
         const data = snapshot.exists() ? snapshot.data() : null;
         const items = Array.isArray(data?.items)
           ? (data.items as CategoryFolderInfo[])

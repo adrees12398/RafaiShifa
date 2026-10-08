@@ -38,8 +38,8 @@ export default function App() {
     }
     return 'home';
   });
-  const [products, setProducts] = useState<Product[]>([]);
-  const [categories, setCategories] = useState<CategoryFolderInfo[]>([]);
+  const [products, setProducts] = useState<Product[]>(() => getStoredProducts());
+  const [categories, setCategories] = useState<CategoryFolderInfo[]>(() => getStoredCategories());
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
@@ -48,16 +48,12 @@ export default function App() {
 
   // Load Initial Products & Stored Cart, then sync catalog from Firestore
   useEffect(() => {
-    setProducts(getStoredProducts());
     const unsubscribeProducts = subscribeProducts((cloudProducts) => {
       setProducts(cloudProducts);
     });
 
-    // Load categories from local cache, then sync from Firestore
-    const localCats = getStoredCategories();
-    if (localCats.length > 0) setCategories(localCats);
     const unsubscribeCategories = subscribeCategories((cloudCats) => {
-      if (cloudCats.length > 0) setCategories(cloudCats);
+      if (cloudCats && cloudCats.length > 0) setCategories(cloudCats);
     });
 
     try {
