@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Product, NavTab, CategoryFolderInfo } from '../types';
 import { INITIAL_CATEGORIES } from '../data/initialData';
 import { ProductCard } from './ProductCard';
@@ -22,7 +22,11 @@ import {
   Layers,
   Activity,
   Check,
-  PhoneCall
+  PhoneCall,
+  ChevronLeft,
+  ChevronRight,
+  LayoutGrid,
+  List
 } from 'lucide-react';
 
 export interface CategoryFolderInfo {
@@ -137,6 +141,15 @@ export const HomeView: React.FC<HomeViewProps> = ({
 
   const [selectedCategory, setSelectedCategory] = useState<string>('All');
   const [sortBy, setSortBy] = useState<'featured' | 'price-low' | 'price-high' | 'rating'>('featured');
+  const [isCategoryGridExpanded, setIsCategoryGridExpanded] = useState(false);
+  const categoryScrollRef = useRef<HTMLDivElement>(null);
+
+  const scrollCategories = (direction: 'left' | 'right') => {
+    if (categoryScrollRef.current) {
+      const scrollAmount = direction === 'left' ? -260 : 260;
+      categoryScrollRef.current.scrollBy({ left: scrollAmount, behavior: 'smooth' });
+    }
+  };
 
   const handleOpenCategory = (catName: string) => {
     setSelectedCategory(catName);
@@ -311,67 +324,196 @@ export const HomeView: React.FC<HomeViewProps> = ({
         </div>
 
         {/* Pansaar-Style Quick Category Circles Bar (App-Style Story Avatars) */}
-        <div className="mt-4 bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-[#A1A696]/30 shadow-sm">
-          <div className="flex items-center justify-between mb-2 px-1">
-            <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#525A43] font-serif flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-[#A1A696]" />
-              <span>Shop by Category (کیٹیگری منتخب کریں)</span>
-            </span>
-            <span className="text-[10px] text-stone-500 font-sans hidden sm:inline">Tap to filter remedies</span>
+        <div className="mt-4 bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-[#A1A696]/30 shadow-sm relative">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
+            <div className="flex items-center gap-2">
+              <span className="text-[11px] font-extrabold uppercase tracking-wider text-[#525A43] font-serif flex items-center gap-1.5">
+                <Sparkles className="w-3.5 h-3.5 text-[#A1A696]" />
+                <span>Shop by Category (کیٹیگری منتخب کریں)</span>
+              </span>
+              <span className="text-[10px] bg-[#525A43]/10 text-[#525A43] px-2 py-0.5 rounded-full font-bold">
+                {categoryFolders.length} کل شعبہ جات
+              </span>
+            </div>
+
+            {/* View All Grid Toggle & Controls */}
+            <div className="flex items-center gap-1.5 ml-auto">
+              <button
+                onClick={() => setIsCategoryGridExpanded(!isCategoryGridExpanded)}
+                className="text-[11px] font-bold text-[#525A43] hover:text-[#2F3428] bg-stone-100 hover:bg-stone-200 px-2.5 py-1 rounded-xl transition-all flex items-center gap-1 cursor-pointer border border-stone-200 shadow-2xs"
+                title={isCategoryGridExpanded ? "Switch to single line scroll" : "Show all categories in a grid"}
+              >
+                {isCategoryGridExpanded ? (
+                  <>
+                    <List className="w-3 h-3 text-[#525A43]" />
+                    <span>ایک لائن (Scroll)</span>
+                  </>
+                ) : (
+                  <>
+                    <LayoutGrid className="w-3 h-3 text-[#525A43]" />
+                    <span>تمام کیٹیگریز دیکھیں (All {categoryFolders.length})</span>
+                  </>
+                )}
+              </button>
+
+              {/* Arrow navigation buttons for horizontal scroll mode */}
+              {!isCategoryGridExpanded && (
+                <div className="flex items-center gap-1">
+                  <button
+                    onClick={() => scrollCategories('left')}
+                    aria-label="Scroll categories left"
+                    className="p-1 rounded-lg bg-stone-100 hover:bg-[#525A43] hover:text-white text-stone-600 transition-colors border border-stone-200 cursor-pointer"
+                  >
+                    <ChevronLeft className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    onClick={() => scrollCategories('right')}
+                    aria-label="Scroll categories right"
+                    className="p-1 rounded-lg bg-stone-100 hover:bg-[#525A43] hover:text-white text-stone-600 transition-colors border border-stone-200 cursor-pointer"
+                  >
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+              )}
+            </div>
           </div>
 
-          <div className="flex items-start gap-3 sm:gap-5 overflow-x-auto pb-1.5 scrollbar-none pt-1">
-            {categoryFolders.map((folder) => {
-              const isSelected = selectedCategory === folder.name;
-              const count = folder.name === 'All' 
-                ? products.length 
-                : products.filter(p => p.category === folder.name).length;
+          {/* If Grid Expanded: Show all categories in a clean multi-row responsive grid */}
+          {isCategoryGridExpanded ? (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 gap-3 sm:gap-4 pt-2">
+              {categoryFolders.map((folder) => {
+                const isSelected = selectedCategory === folder.name;
+                const count = folder.name === 'All' 
+                  ? products.length 
+                  : products.filter(p => p.category === folder.name).length;
 
-              return (
-                <button
-                  key={folder.name}
-                  onClick={() => handleOpenCategory(folder.name)}
-                  className="group flex flex-col items-center text-center shrink-0 w-20 sm:w-24 cursor-pointer focus:outline-none transition-all"
-                >
-                  {/* Round Category Avatar with Ring */}
-                  <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 transition-all duration-300 ${
-                    isSelected 
-                      ? 'ring-3 ring-[#525A43] ring-offset-2 scale-105 shadow-md bg-[#525A43]/15' 
-                      : 'ring-1.5 ring-stone-200 group-hover:ring-[#A1A696] group-hover:scale-105 bg-stone-50'
-                  }`}>
-                    <img
-                      src={folder.imageUrl}
-                      alt={folder.name}
-                      className="w-full h-full rounded-full object-cover bg-stone-100"
-                      onError={(e) => {
-                        e.currentTarget.src = '/products/LiverBoost.jpeg';
-                      }}
-                    />
-                    {isSelected && (
-                      <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#525A43] text-white flex items-center justify-center text-[9px] shadow-sm border border-white font-bold">
-                        ✓
+                return (
+                  <button
+                    key={folder.name}
+                    onClick={() => handleOpenCategory(folder.name)}
+                    className="group flex flex-col items-center text-center p-2 rounded-2xl hover:bg-stone-50 transition-all cursor-pointer focus:outline-none"
+                  >
+                    {/* Round Category Avatar with Ring */}
+                    <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 transition-all duration-300 ${
+                      isSelected 
+                        ? 'ring-3 ring-[#525A43] ring-offset-2 scale-105 shadow-md bg-[#525A43]/15' 
+                        : 'ring-1.5 ring-stone-200 group-hover:ring-[#A1A696] group-hover:scale-105 bg-stone-50'
+                    }`}>
+                      <img
+                        src={folder.imageUrl}
+                        alt={folder.name}
+                        className="w-full h-full rounded-full object-cover bg-stone-100"
+                        onError={(e) => {
+                          e.currentTarget.src = '/products/LiverBoost.jpeg';
+                        }}
+                      />
+                      {isSelected && (
+                        <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#525A43] text-white flex items-center justify-center text-[9px] shadow-sm border border-white font-bold">
+                          ✓
+                        </span>
+                      )}
+                    </div>
+
+                    <span className={`mt-1.5 text-xs font-bold font-serif leading-tight transition-colors line-clamp-1 ${
+                      isSelected ? 'text-[#525A43]' : 'text-[#2F3428] group-hover:text-[#525A43]'
+                    }`}>
+                      {folder.name === 'All' ? 'سب ادویات' : (folder.urduName || folder.name)}
+                    </span>
+                    <span className="text-[10px] text-stone-500 font-sans leading-none mt-0.5 truncate w-full">
+                      {folder.name === 'All' ? 'All Products' : folder.name}
+                    </span>
+                    <span className={`mt-1 text-[8px] px-1.5 py-0.2 rounded-full font-mono ${
+                      isSelected ? 'bg-[#525A43] text-white' : 'bg-stone-100 text-stone-500'
+                    }`}>
+                      {count} {count === 1 ? 'dawa' : 'dawayi'}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : (
+            /* Scrollable Row with Left/Right arrow overlay buttons and mouse wheel support */
+            <div className="relative group/scroll">
+              {/* Left Arrow Overlay Button for single-line scroll */}
+              <button
+                onClick={() => scrollCategories('left')}
+                aria-label="Previous categories"
+                className="absolute -left-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/95 text-[#525A43] hover:bg-[#525A43] hover:text-white shadow-md border border-stone-200 flex items-center justify-center transition-all cursor-pointer opacity-90 hover:opacity-100"
+              >
+                <ChevronLeft className="w-4 h-4" />
+              </button>
+
+              <div 
+                ref={categoryScrollRef}
+                onWheel={(e) => {
+                  if (e.deltaY !== 0 && categoryScrollRef.current) {
+                    categoryScrollRef.current.scrollLeft += e.deltaY;
+                  }
+                }}
+                className="flex items-start gap-3 sm:gap-5 overflow-x-auto pb-2 scroll-smooth pt-1 px-4 scrollbar-thin scrollbar-thumb-stone-300 hover:scrollbar-thumb-[#525A43]"
+              >
+                {categoryFolders.map((folder) => {
+                  const isSelected = selectedCategory === folder.name;
+                  const count = folder.name === 'All' 
+                    ? products.length 
+                    : products.filter(p => p.category === folder.name).length;
+
+                  return (
+                    <button
+                      key={folder.name}
+                      onClick={() => handleOpenCategory(folder.name)}
+                      className="group flex flex-col items-center text-center shrink-0 w-20 sm:w-24 cursor-pointer focus:outline-none transition-all"
+                    >
+                      {/* Round Category Avatar with Ring */}
+                      <div className={`relative w-14 h-14 sm:w-16 sm:h-16 rounded-full p-0.5 transition-all duration-300 ${
+                        isSelected 
+                          ? 'ring-3 ring-[#525A43] ring-offset-2 scale-105 shadow-md bg-[#525A43]/15' 
+                          : 'ring-1.5 ring-stone-200 group-hover:ring-[#A1A696] group-hover:scale-105 bg-stone-50'
+                      }`}>
+                        <img
+                          src={folder.imageUrl}
+                          alt={folder.name}
+                          className="w-full h-full rounded-full object-cover bg-stone-100"
+                          onError={(e) => {
+                            e.currentTarget.src = '/products/LiverBoost.jpeg';
+                          }}
+                        />
+                        {isSelected && (
+                          <span className="absolute bottom-0 right-0 w-4 h-4 rounded-full bg-[#525A43] text-white flex items-center justify-center text-[9px] shadow-sm border border-white font-bold">
+                            ✓
+                          </span>
+                        )}
+                      </div>
+
+                      {/* Title & Badge */}
+                      <span className={`mt-1.5 text-xs font-bold font-serif leading-tight line-clamp-1 transition-colors ${
+                        isSelected ? 'text-[#525A43]' : 'text-[#2F3428] group-hover:text-[#525A43]'
+                      }`}>
+                        {folder.name === 'All' ? 'سب ادویات' : (folder.urduName || folder.name)}
                       </span>
-                    )}
-                  </div>
+                      <span className="text-[10px] text-stone-500 font-sans leading-none mt-0.5 truncate w-full">
+                        {folder.name === 'All' ? 'All Products' : folder.name}
+                      </span>
+                      <span className={`mt-1 text-[8px] px-1.5 py-0.2 rounded-full font-mono ${
+                        isSelected ? 'bg-[#525A43] text-white' : 'bg-stone-100 text-stone-500'
+                      }`}>
+                        {count} {count === 1 ? 'dawa' : 'dawayi'}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
 
-                  {/* Title & Badge */}
-                  <span className={`mt-1.5 text-xs font-bold font-serif leading-tight line-clamp-1 transition-colors ${
-                    isSelected ? 'text-[#525A43]' : 'text-[#2F3428] group-hover:text-[#525A43]'
-                  }`}>
-                    {folder.name === 'All' ? 'سب ادویات' : (folder.urduName || folder.name)}
-                  </span>
-                  <span className="text-[10px] text-stone-500 font-sans leading-none mt-0.5 truncate w-full">
-                    {folder.name === 'All' ? 'All Products' : folder.name}
-                  </span>
-                  <span className={`mt-1 text-[8px] px-1.5 py-0.2 rounded-full font-mono ${
-                    isSelected ? 'bg-[#525A43] text-white' : 'bg-stone-100 text-stone-500'
-                  }`}>
-                    {count} {count === 1 ? 'dawa' : 'dawayi'}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
+              {/* Right Arrow Overlay Button for single-line scroll */}
+              <button
+                onClick={() => scrollCategories('right')}
+                aria-label="Next categories"
+                className="absolute -right-2 top-1/2 -translate-y-1/2 z-10 w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-white/95 text-[#525A43] hover:bg-[#525A43] hover:text-white shadow-md border border-stone-200 flex items-center justify-center transition-all cursor-pointer opacity-90 hover:opacity-100"
+              >
+                <ChevronRight className="w-4 h-4" />
+              </button>
+            </div>
+          )}
         </div>
       </section>
 

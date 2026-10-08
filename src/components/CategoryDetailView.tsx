@@ -396,7 +396,6 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
           </span>
           {allCategories
             .filter((c) => c.name !== 'All' && c.name !== categoryInfo.name)
-            .slice(0, 4)
             .map((cat) => (
               <button
                 key={cat.name}
