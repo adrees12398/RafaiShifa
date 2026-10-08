@@ -44,7 +44,9 @@ import {
   Image as ImageIcon,
   Upload,
   Layers,
-  Sparkles
+  Sparkles,
+  Check,
+  ChevronDown
 } from 'lucide-react';
 
 interface AdminViewProps {
@@ -104,6 +106,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
   const [newProdPrice, setNewProdPrice] = useState<number>(500);
   const [newProdCategory, setNewProdCategory] = useState('');
   const [newProdCategoryUrdu, setNewProdCategoryUrdu] = useState('');
+  const [isCustomCategoryMode, setIsCustomCategoryMode] = useState(false);
   const [newProdDesc, setNewProdDesc] = useState('');
   const [newProdDosage, setNewProdDosage] = useState('1 teaspoon twice daily');
   const [newProdImageUrl, setNewProdImageUrl] = useState('');
@@ -266,6 +269,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdPrice(p.price);
     setNewProdCategory(p.category);
     setNewProdCategoryUrdu('');
+    setIsCustomCategoryMode(!categoriesList.some((c) => c.name.toLowerCase() === (p.category || '').toLowerCase()));
     setNewProdDesc(p.description);
     setNewProdDosage(p.dosage);
     setNewProdImageUrl(p.imageUrl);
@@ -283,6 +287,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdImageUrl('');
     setNewProdCategory('');
     setNewProdCategoryUrdu('');
+    setIsCustomCategoryMode(false);
   };
 
   const openAddProductModal = () => {
@@ -292,6 +297,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
     setNewProdPrice(500);
     setNewProdCategory(categoriesList[0]?.name || 'Tib-e-Nabvi Special');
     setNewProdCategoryUrdu('');
+    setIsCustomCategoryMode(false);
     setNewProdDesc('');
     setNewProdDosage('1 teaspoon twice daily');
     setNewProdImageUrl('');
@@ -1530,83 +1536,166 @@ export const AdminView: React.FC<AdminViewProps> = ({
                 />
               </div>
 
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                <div>
-                  <label className="block font-bold text-[#2F3428] mb-1">Price (Rs.)</label>
-                  <input
-                    type="number"
-                    required
-                    value={newProdPrice}
-                    onChange={(e) => setNewProdPrice(Number(e.target.value))}
-                    className="w-full p-2 border border-stone-300 rounded-lg text-xs"
-                  />
-                </div>
-
-                <div>
-                  <label className="block font-bold text-[#2F3428] mb-1">
-                    Category (اپنی مرضی کی کیٹیگری لکھیں یا منتخب کریں) *
-                  </label>
-                  <div className="relative">
-                    <input
-                      type="text"
-                      required
-                      list="category-suggestions-list"
-                      value={newProdCategory}
-                      onChange={(e) => setNewProdCategory(e.target.value)}
-                      placeholder="Type ANY category of your choice (e.g. Skin Care, Hair Oil, etc.)"
-                      className="w-full p-2.5 border-2 border-[#525A43] rounded-xl text-xs bg-white text-[#2F3428] font-medium focus:ring-2 focus:ring-[#A1A696] focus:outline-none placeholder-stone-400"
-                    />
-                    <datalist id="category-suggestions-list">
-                      {categoriesList.map((cat) => (
-                        <option key={cat.id || cat.name} value={cat.name}>
-                          {cat.name} {cat.urduName ? `(${cat.urduName})` : ''}
-                        </option>
-                      ))}
-                    </datalist>
-                  </div>
-
-                  {/* Quick Select Chips */}
-                  <div className="flex flex-wrap items-center gap-1 mt-1.5">
-                    <span className="text-[10px] text-stone-500 font-medium">Suggestions:</span>
-                    {categoriesList.slice(0, 6).map((cat) => (
-                      <button
-                        key={cat.name}
-                        type="button"
-                        onClick={() => setNewProdCategory(cat.name)}
-                        className={`px-2 py-0.5 rounded-md text-[10px] transition-all font-medium border ${
-                          newProdCategory.toLowerCase() === cat.name.toLowerCase()
-                            ? 'bg-[#525A43] text-white border-[#525A43] shadow-xs'
-                            : 'bg-stone-100 hover:bg-stone-200 text-stone-700 border-stone-200'
-                        }`}
-                      >
-                        {cat.name}
-                      </button>
-                    ))}
-                  </div>
-                </div>
+              <div>
+                <label className="block font-bold text-[#2F3428] mb-1 text-xs">Price (Rs.) *</label>
+                <input
+                  type="number"
+                  required
+                  value={newProdPrice}
+                  onChange={(e) => setNewProdPrice(Number(e.target.value))}
+                  className="w-full p-2.5 border border-stone-300 rounded-xl text-xs bg-white text-[#2F3428] font-semibold focus:ring-2 focus:ring-[#A1A696] focus:outline-none"
+                />
               </div>
 
-              {/* If user types a new category not in categoriesList, let them provide optional Urdu name */}
-              {newProdCategory.trim() && !categoriesList.some((c) => c.name.toLowerCase() === newProdCategory.trim().toLowerCase()) && (
-                <div className="p-3 bg-emerald-50 border border-emerald-300 rounded-2xl space-y-1.5">
-                  <div className="flex items-center gap-1.5 text-emerald-900 text-xs font-bold font-serif">
-                    <Sparkles className="w-4 h-4 text-emerald-600" />
-                    <span>✨ New Category Detected: "{newProdCategory.trim()}"</span>
-                  </div>
-                  <p className="text-[10px] text-emerald-700">
-                    This new category will automatically be created and shown as a collection card on the home screen!
-                  </p>
-                  <div>
-                    <input
-                      type="text"
-                      value={newProdCategoryUrdu}
-                      onChange={(e) => setNewProdCategoryUrdu(e.target.value)}
-                      placeholder="Category Name in Urdu (Optional e.g. امراضِ جلد و بال)"
-                      className="w-full p-2 bg-white border border-emerald-300 rounded-lg text-xs font-serif text-emerald-950 focus:outline-none"
-                    />
+              {/* CATEGORY SELECTION: Professional Dropdown & List */}
+              <div className="space-y-2 border-t border-stone-200/80 pt-3">
+                <div className="flex items-center justify-between">
+                  <label className="block font-bold text-[#2F3428] text-xs">
+                    Category (طبی زمرہ) *
+                  </label>
+                  
+                  {/* Mode switcher tabs */}
+                  <div className="flex items-center p-0.5 bg-stone-100 rounded-lg border border-stone-200">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setIsCustomCategoryMode(false);
+                        if (!newProdCategory || !categoriesList.some((c) => c.name.toLowerCase() === newProdCategory.toLowerCase())) {
+                          setNewProdCategory(categoriesList[0]?.name || 'Tib-e-Nabvi Special');
+                        }
+                      }}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                        !isCustomCategoryMode
+                          ? 'bg-[#525A43] text-white shadow-xs'
+                          : 'text-stone-600 hover:text-stone-900'
+                      }`}
+                    >
+                      📋 Choose from List
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => setIsCustomCategoryMode(true)}
+                      className={`px-2.5 py-1 rounded-md text-[11px] font-bold transition-all ${
+                        isCustomCategoryMode
+                          ? 'bg-[#525A43] text-white shadow-xs'
+                          : 'text-stone-600 hover:text-stone-900'
+                      }`}
+                    >
+                      ✍️ + Type New
+                    </button>
                   </div>
                 </div>
-              )}
+
+                {!isCustomCategoryMode ? (
+                  /* LIST MODE: Professional Dropdown Select + Visual List Cards */
+                  <div className="space-y-2">
+                    {/* Select Dropdown */}
+                    <div className="relative">
+                      <select
+                        value={newProdCategory}
+                        onChange={(e) => {
+                          if (e.target.value === '__add_new__') {
+                            setIsCustomCategoryMode(true);
+                            setNewProdCategory('');
+                          } else {
+                            setNewProdCategory(e.target.value);
+                          }
+                        }}
+                        className="w-full p-2.5 bg-white border-2 border-[#525A43] rounded-xl text-xs text-[#2F3428] font-bold focus:ring-2 focus:ring-[#A1A696] focus:outline-none appearance-none pr-8 cursor-pointer shadow-xs"
+                      >
+                        {categoriesList.map((cat) => (
+                          <option key={cat.id || cat.name} value={cat.name}>
+                            🌿 {cat.name} {cat.urduName ? `(${cat.urduName})` : ''}
+                          </option>
+                        ))}
+                        <option value="__add_new__" className="font-bold text-[#525A43]">
+                          ✨ + Type New Custom Category (نئی کیٹیگری خود لکھیں)...
+                        </option>
+                      </select>
+                      <ChevronDown className="w-4 h-4 text-[#525A43] absolute right-3 top-3 pointer-events-none" />
+                    </div>
+
+                    {/* Professional Scrollable List of All Categories (shows all categories cleanly in a list format) */}
+                    <div className="bg-[#FAF9F5] border border-stone-200 rounded-xl p-2.5 space-y-1.5">
+                      <div className="text-[10px] font-bold text-stone-500 uppercase tracking-wider px-1 flex items-center justify-between">
+                        <span>Available Categories ({categoriesList.length})</span>
+                        <span className="text-[#525A43] normal-case font-medium">Click any to select</span>
+                      </div>
+                      <div className="max-h-36 overflow-y-auto space-y-1 pr-1">
+                        {categoriesList.map((cat) => {
+                          const isSelected = newProdCategory.toLowerCase() === cat.name.toLowerCase();
+                          return (
+                            <button
+                              key={cat.id || cat.name}
+                              type="button"
+                              onClick={() => setNewProdCategory(cat.name)}
+                              className={`w-full text-left px-3 py-2 rounded-lg text-xs flex items-center justify-between transition-all ${
+                                isSelected
+                                  ? 'bg-[#525A43] text-white shadow-xs font-bold'
+                                  : 'bg-white hover:bg-stone-100 text-[#2F3428] border border-stone-200/70'
+                              }`}
+                            >
+                              <div className="flex items-center gap-2 min-w-0">
+                                <span className={`w-2 h-2 rounded-full shrink-0 ${isSelected ? 'bg-white' : 'bg-[#525A43]'}`}></span>
+                                <span className="truncate">{cat.name}</span>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0">
+                                {cat.urduName && (
+                                  <span className={`text-[11px] font-serif ${isSelected ? 'text-stone-200' : 'text-stone-500'}`}>
+                                    {cat.urduName}
+                                  </span>
+                                )}
+                                {isSelected && <Check className="w-3.5 h-3.5 text-white" />}
+                              </div>
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  /* TYPE NEW MODE: Clean inputs for custom category */
+                  <div className="p-3 bg-emerald-50/80 border border-emerald-300 rounded-2xl space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-bold text-emerald-900 flex items-center gap-1.5 font-serif">
+                        <Sparkles className="w-3.5 h-3.5 text-emerald-600" />
+                        <span>Type Any Custom Category of Your Choice</span>
+                      </span>
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsCustomCategoryMode(false);
+                          setNewProdCategory(categoriesList[0]?.name || 'Tib-e-Nabvi Special');
+                        }}
+                        className="text-[10px] font-bold text-emerald-800 hover:underline"
+                      >
+                        ← Back to List
+                      </button>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <input
+                        type="text"
+                        required
+                        value={newProdCategory}
+                        onChange={(e) => setNewProdCategory(e.target.value)}
+                        placeholder="Category Name in English (e.g. Muraba jat, Hair Oil, Skin Care)"
+                        className="w-full p-2.5 bg-white border border-emerald-300 rounded-xl text-xs text-[#2F3428] font-bold focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder-stone-400"
+                      />
+                      <input
+                        type="text"
+                        value={newProdCategoryUrdu}
+                        onChange={(e) => setNewProdCategoryUrdu(e.target.value)}
+                        placeholder="Category Name in Urdu (Optional e.g. مربہ جات، امراضِ جلد)"
+                        className="w-full p-2 bg-white border border-emerald-300 rounded-xl text-xs font-serif text-emerald-950 focus:ring-2 focus:ring-emerald-400 focus:outline-none placeholder-stone-400"
+                      />
+                    </div>
+                    <p className="text-[10px] text-emerald-700">
+                      ✨ This new category will automatically be created and shown as a folder card on the home screen!
+                    </p>
+                  </div>
+                )}
+              </div>
 
               <div>
                 <label className="block font-bold text-[#2F3428] mb-1">Product Image</label>
