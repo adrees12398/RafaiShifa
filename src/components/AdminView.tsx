@@ -1727,6 +1727,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
           </div>
         </div>
         </div>
+      )}
+
       {/* ADD / EDIT CATEGORY MODAL */}
       {showCategoryModal && (
         <div className="fixed inset-0 h-dvh z-50 bg-[#2F3428]/70 backdrop-blur-sm overflow-y-auto">
