@@ -714,7 +714,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
             RafaiShifa Admin Access
           </h2>
           <p className="text-xs text-stone-500">
-            Protected management portal for viewing live Firestore orders and updating inventory.
+            Protected management portal for viewing live orders and updating inventory.
           </p>
         </div>
 
@@ -772,40 +772,11 @@ export const AdminView: React.FC<AdminViewProps> = ({
             )}
           </div>
           <p className="text-xs text-stone-200 mt-1">
-            Real-time synchronization active with Firebase Firestore (<code className="font-mono text-[#A1A696]">orders</code> collection).
+            Real-time store management and order tracking.
           </p>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2">
-            {checkingFs ? (
-              <span className="px-3 py-2 rounded-xl bg-[#3F4633] text-white border border-[#A1A696]/40 text-xs font-bold flex items-center gap-2">
-                <RefreshCw className="w-3.5 h-3.5 animate-spin" />
-                Checking...
-              </span>
-            ) : fsStatus ? (
-              <button
-                onClick={() => runConnectionCheck(true)}
-                title={fsStatus.ok ? 'Firestore Connected' : `Firestore Error: ${fsStatus.message}`}
-                className={`px-3 py-2 rounded-xl border text-xs font-bold flex items-center gap-2 transition-colors ${
-                  fsStatus.ok
-                    ? 'bg-[#A1A696]/20 text-[#A1A696] border-[#A1A696]/40 hover:bg-[#A1A696]/30'
-                    : 'bg-red-100 text-red-700 border-red-300 hover:bg-red-200'
-                }`}
-              >
-                <span className={`w-1.5 h-1.5 rounded-full ${fsStatus.ok ? 'bg-emerald-400' : 'bg-red-500'} animate-pulse`}></span>
-                {fsStatus.ok ? 'Firestore Connected' : 'Firestore Error'}
-              </button>
-            ) : (
-              <button
-                onClick={() => runConnectionCheck(true)}
-                className="px-3 py-2 rounded-xl bg-[#3F4633] hover:bg-[#2F3428] text-white border border-[#A1A696]/40 text-xs font-bold flex items-center gap-2 transition-colors"
-              >
-                <RefreshCw className={`w-3.5 h-3.5 ${checkingFs ? 'animate-spin' : ''}`} />
-                Check Firestore
-              </button>
-            )}
-          </div>
           <button
             onClick={() => {
               try {
@@ -827,7 +798,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
         <div className="flex items-center justify-between gap-3 bg-red-50 border border-red-200 text-red-800 pl-3.5 pr-2 py-2 rounded-xl text-[11px] shadow-sm">
           <div className="flex items-center gap-2 min-w-0">
             <XCircle className="w-3.5 h-3.5 shrink-0" />
-            <span className="font-bold shrink-0">Firestore Error</span>
+            <span className="font-bold shrink-0">Connection Alert</span>
             <span className="font-mono truncate hidden sm:inline">{fsStatus.message}</span>
           </div>
           <button
@@ -982,7 +953,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
           {/* Table */}
           {loadingOrders ? (
             <div className="text-center py-12 text-stone-500 text-xs">
-              Fetching live orders from Firestore...
+              Fetching live orders...
             </div>
           ) : filteredOrders.length === 0 ? (
             <div className="text-center py-12 text-stone-500 text-xs space-y-2">
@@ -1085,31 +1056,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
             <div className="flex items-center gap-2">
               <button
                 onClick={async () => {
-                  console.log('🧪 Testing Firestore write...');
-                  try {
-                    await import('../lib/firebase').then(async ({ db }) => {
-                      const { doc, setDoc, serverTimestamp } = await import('firebase/firestore');
-                      const testDoc = doc(db, 'test/connection');
-                      await setDoc(testDoc, {
-                        message: 'Test write from admin panel',
-                        timestamp: serverTimestamp()
-                      });
-                      alert('✅ Firestore write test SUCCESSFUL!\n\nFirestore is working correctly.');
-                    });
-                  } catch (err) {
-                    console.error('❌ Firestore test failed:', err);
-                    const errorMsg = err instanceof Error ? err.message : String(err);
-                    alert(`❌ Firestore test FAILED!\n\nError: ${errorMsg}\n\nCheck:\n1. Firebase config in .env\n2. Firestore rules\n3. Internet connection`);
-                  }
-                }}
-                className="px-3 py-2.5 rounded-xl bg-blue-100 border-2 border-blue-300 text-blue-700 font-bold text-xs hover:bg-blue-200"
-                title="Test Firestore connection"
-              >
-                Test Firestore
-              </button>
-              <button
-                onClick={async () => {
-                  if (!confirm('⚠️ WARNING: This will DELETE ALL PRODUCTS from localStorage and Firestore!\n\nAre you absolutely sure?')) return;
+                  if (!confirm('⚠️ WARNING: This will DELETE ALL PRODUCTS from the store catalog!\n\nAre you absolutely sure?')) return;
                   
                   try {
                     // Clear localStorage
@@ -1120,7 +1067,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     // Clear state
                     setProducts([]);
                     
-                    // Clear Firestore
+                    // Clear database
                     await import('../lib/firebase').then(({ syncProductsToDb }) => {
                       return syncProductsToDb([]);
                     });
@@ -1129,7 +1076,7 @@ export const AdminView: React.FC<AdminViewProps> = ({
                     setTimeout(() => window.location.reload(), 2000);
                   } catch (err) {
                     console.error('Failed to clear products:', err);
-                    alert('❌ Failed to clear Firestore. Check console for details.');
+                    alert('❌ Failed to clear products. Check console for details.');
                   }
                 }}
                 className="px-3 py-2.5 rounded-xl bg-red-100 border-2 border-red-300 text-red-700 font-bold text-xs hover:bg-red-200"
