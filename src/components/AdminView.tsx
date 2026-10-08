@@ -821,8 +821,8 @@ export const AdminView: React.FC<AdminViewProps> = ({
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
         
         <div className="bg-white p-5 rounded-2xl border border-stone-200 shadow-sm flex items-center gap-4">
-          <div className="w-12 h-12 rounded-xl bg-[#A1A696]/20 text-[#525A43] flex items-center justify-center font-bold shrink-0">
-            <span className="text-2xl font-black">₹</span>
+          <div className="w-12 h-12 rounded-xl bg-[#A1A696]/20 text-[#525A43] flex items-center justify-center font-bold shrink-0" title="Pakistani Rupee (PKR)">
+            <span className="text-xl font-black font-sans leading-none">₨</span>
           </div>
           <div>
             <span className="text-xs text-stone-500 font-medium">Total Orders Revenue</span>
