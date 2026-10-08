@@ -21,7 +21,8 @@ import {
   FolderArchive,
   Layers,
   Activity,
-  Check
+  Check,
+  PhoneCall
 } from 'lucide-react';
 
 export interface CategoryFolderInfo {
@@ -354,22 +355,61 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   </div>
 
                   {/* Title & Badge */}
-                  <span className={`mt-1.5 text-[11px] font-bold leading-tight line-clamp-1 transition-colors ${
+                  <span className={`mt-1.5 text-xs font-bold font-serif leading-tight line-clamp-1 transition-colors ${
                     isSelected ? 'text-[#525A43]' : 'text-[#2F3428] group-hover:text-[#525A43]'
                   }`}>
-                    {folder.name === 'All' ? 'All' : folder.name}
+                    {folder.name === 'All' ? 'سب ادویات' : (folder.urduName || folder.name)}
                   </span>
-                  <span className="text-[9px] text-stone-500 font-serif leading-none mt-0.5 truncate w-full">
-                    {folder.urduName}
+                  <span className="text-[10px] text-stone-500 font-sans leading-none mt-0.5 truncate w-full">
+                    {folder.name === 'All' ? 'All Products' : folder.name}
                   </span>
                   <span className={`mt-1 text-[8px] px-1.5 py-0.2 rounded-full font-mono ${
                     isSelected ? 'bg-[#525A43] text-white' : 'bg-stone-100 text-stone-500'
                   }`}>
-                    {count} {count === 1 ? 'item' : 'items'}
+                    {count} {count === 1 ? 'dawa' : 'dawayi'}
                   </span>
                 </button>
               );
             })}
+          </div>
+        </div>
+      </section>
+
+      {/* Voice Note & Direct WhatsApp Order Banner for Illiterate / Elderly / Non-Tech Users */}
+      <section className="max-w-4xl mx-auto w-full px-2 sm:px-4">
+        <div className="bg-gradient-to-r from-emerald-900 via-emerald-800 to-[#525A43] text-white rounded-2xl sm:rounded-3xl p-4 sm:p-5 shadow-xl border border-emerald-600/30 flex flex-col md:flex-row items-center justify-between gap-4">
+          <div className="flex items-center gap-3.5 text-center md:text-left">
+            <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-2xl bg-white/15 backdrop-blur-md text-emerald-300 flex items-center justify-center shrink-0 border border-white/20 shadow-inner">
+              <PhoneCall className="w-6 h-6 sm:w-7 sm:h-7 animate-pulse text-emerald-300" />
+            </div>
+            <div>
+              <div className="inline-block px-2.5 py-0.5 rounded-full bg-emerald-400 text-[#2F3428] font-black text-[10px] uppercase tracking-wider mb-1">
+                آسان آرڈر سروس • Voice Order
+              </div>
+              <h3 className="text-base sm:text-lg md:text-xl font-bold font-serif leading-tight">
+                پڑھنے یا آرڈر کرنے میں مشکل ہے؟
+              </h3>
+              <p className="text-xs sm:text-sm text-stone-200 mt-0.5">
+                واٹس ایپ پر صرف وائس میسج (آواز کا میسج) بھیجیں یا کال کریں — ہم خود آرڈر لکھ لیں گے!
+              </p>
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2.5 w-full md:w-auto shrink-0">
+            <a
+              href="https://wa.me/923004652599?text=%D8%A7%D9%84%D8%B3%D9%84%D8%A7%D9%85%20%D8%B9%D9%84%DB%8C%DA%A9%D9%85!%20%D9%85%D8%AC%DA%BE%DB%92%20%D8%AF%D9%88%D8%A7%D8%A6%DB%8C%20%DA%A9%D8%A7%20%D8%A2%D8%B1%DA%88%D8%B1%20%DA%A9%D8%B1%D9%86%D8%A7%20%DB%81%DB%92"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex-1 md:flex-none px-4 sm:px-5 py-3 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-white font-extrabold text-xs sm:text-sm flex items-center justify-center gap-2 shadow-lg transition-transform active:scale-95"
+            >
+              <span>💬 واٹس ایپ پر آرڈر</span>
+            </a>
+            <a
+              href="tel:+923004652599"
+              className="px-4 sm:px-5 py-3 rounded-xl bg-white/15 hover:bg-white/25 text-white border border-white/30 font-bold text-xs sm:text-sm flex items-center justify-center gap-1.5 transition-colors"
+            >
+              <span>📞 0300-4652599</span>
+            </a>
           </div>
         </div>
       </section>
@@ -397,13 +437,13 @@ export const HomeView: React.FC<HomeViewProps> = ({
           <div>
             <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#525A43]/10 text-[#525A43] text-xs font-bold mb-2">
               <Sparkles className="w-3.5 h-3.5 text-[#525A43]" />
-              <span>Explore Collections | طبی زمرہ جات</span>
+              <span>طبی زمرہ جات اور بیماریاں | Health Categories</span>
             </div>
             <h2 className="text-2xl sm:text-3xl font-extrabold text-[#2F3428] tracking-tight font-serif">
-              Shop by Category
+              اپنی بیماری یا ضرورت کا شعبہ چنیں
             </h2>
-            <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl">
-              Authentic Unani and Tib-e-Nabvi remedies categorized by formulation type and health target. Tap any category to view remedies.
+            <p className="text-xs sm:text-sm text-stone-600 mt-1 max-w-2xl font-serif">
+              جس بیماری کی دوائی چاہیے اس کیٹیگری پر کلک کریں، آگے تمام ادویات اور قیمتیں مل جائیں گی۔
             </p>
           </div>
 
@@ -418,7 +458,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
               className="self-start sm:self-auto px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-2 transition-all border border-stone-300 shadow-2xs cursor-pointer"
             >
               <FolderArchive className="w-4 h-4 text-[#525A43]" />
-              <span>View All Categories ({products.length})</span>
+              <span>تمام زمرہ جات دیکھیں ({products.length})</span>
             </button>
           )}
         </div>
@@ -441,7 +481,7 @@ export const HomeView: React.FC<HomeViewProps> = ({
                     : 'border-stone-200 hover:border-[#A1A696]'
                 }`}
               >
-                {/* Visual Image Header (Pansaar Store Look) */}
+                {/* Visual Image Header */}
                 <div className="relative h-44 sm:h-48 overflow-hidden bg-stone-100">
                   <img
                     src={folder.imageUrl}
@@ -456,69 +496,57 @@ export const HomeView: React.FC<HomeViewProps> = ({
                   <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/35 to-transparent flex flex-col justify-between p-4 sm:p-5 text-white">
                     <div className="flex items-center justify-between">
                       <span className="px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider bg-white/95 text-[#2F3428] backdrop-blur-md shadow-sm">
-                        {folder.badge}
+                        {folder.badge || 'خالص یونانی دوا'}
                       </span>
                       <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-[#525A43]/90 text-white backdrop-blur-md font-mono border border-white/20">
-                        {count} {count === 1 ? 'Remedy' : 'Remedies'}
+                        {count} {count === 1 ? 'دوا' : 'ادویات'}
                       </span>
                     </div>
 
                     <div>
-                      <span className="text-xs font-serif text-[#A1A696] font-bold block mb-0.5">
+                      <span className="text-sm font-serif text-[#A1A696] font-bold block mb-0.5">
                         {folder.urduName}
                       </span>
                       <h3 className="text-lg sm:text-xl font-bold font-serif text-white leading-tight">
-                        {folder.name === 'All' ? 'All Herbal Categories' : folder.name}
+                        {folder.name === 'All' ? 'تمام ادویات (All Remedies)' : folder.name}
                       </h3>
                     </div>
                   </div>
                 </div>
 
                 {/* Card Content Body */}
-                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3.5">
+                <div className="p-4 sm:p-5 flex-1 flex flex-col justify-between space-y-3">
                   
-                  {/* Explicit Category Type Callout */}
+                  {/* Simple Urdu Classification / Focus */}
                   <div className={`p-3 rounded-xl border transition-all ${
                     isSelected 
                       ? 'bg-[#525A43]/10 border-[#525A43]/30' 
-                      : 'bg-[#F9F9F6] border-[#A1A696]/20 group-hover:border-[#A1A696]/40'
+                      : 'bg-[#F9F9F6] border-[#A1A696]/20'
                   }`}>
-                    <div className="flex items-center justify-between text-[10px] text-[#525A43] font-bold uppercase tracking-wider mb-1">
-                      <span className="flex items-center gap-1.5">
-                        <Layers className="w-3.5 h-3.5 text-[#525A43]" />
-                        <span>Category Type:</span>
-                      </span>
-                      <span className="font-serif normal-case text-stone-500 text-[10px]">{folder.folderTypeUrdu}</span>
+                    <div className="text-xs sm:text-sm font-bold text-[#2F3428] font-serif leading-snug">
+                      {folder.folderTypeUrdu || folder.urduName}
                     </div>
-                    <div className="text-xs sm:text-sm font-extrabold text-[#2F3428] leading-snug">
-                      {folder.folderType}
+                    <div className="text-[11px] text-stone-500 font-sans mt-0.5 truncate">
+                      {folder.name}
                     </div>
                   </div>
 
-                  {/* Description */}
+                  {/* Simple Benefit Description */}
                   <p className="text-xs text-stone-600 leading-relaxed line-clamp-2">
-                    {folder.description}
+                    {folder.focusArea || folder.description}
                   </p>
 
-                  {/* Focus Area Pill */}
-                  <div className="text-[11px] text-[#525A43] bg-stone-50 px-2.5 py-1.5 rounded-lg border border-stone-100 flex items-start gap-1.5">
-                    <span className="font-bold shrink-0">Focus:</span>
-                    <span className="text-stone-700 truncate">{folder.focusArea}</span>
+                  {/* Cash on Delivery Trust Badge */}
+                  <div className="text-[10px] text-emerald-800 bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200 flex items-center gap-1.5 font-bold">
+                    <span>🚚 کیش آن ڈیلیوری - دوائی ملنے پر پیسے دیں</span>
                   </div>
 
-                  {/* Action Button */}
+                  {/* Obvious Action Button */}
                   <div className="pt-2 border-t border-stone-100">
-                    {isSelected ? (
-                      <div className="w-full py-2.5 px-4 rounded-xl bg-[#525A43] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm">
-                        <span>Open Category Screen &amp; All Types</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </div>
-                    ) : (
-                      <div className="w-full py-2.5 px-4 rounded-xl bg-stone-100 group-hover:bg-[#525A43] text-[#2F3428] group-hover:text-white text-xs font-bold flex items-center justify-center gap-2 transition-all">
-                        <span>Explore Category &amp; All Types</span>
-                        <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
-                      </div>
-                    )}
+                    <div className="w-full py-2.5 px-4 rounded-xl bg-[#525A43] group-hover:bg-[#3F4633] text-white text-xs font-bold flex items-center justify-center gap-2 shadow-sm transition-colors cursor-pointer">
+                      <span>👉 تمام ادویات دیکھیں اور آرڈر کریں</span>
+                      <ArrowRight className="w-3.5 h-3.5 group-hover:translate-x-1 transition-transform" />
+                    </div>
                   </div>
 
                 </div>

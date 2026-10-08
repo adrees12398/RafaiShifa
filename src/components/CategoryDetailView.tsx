@@ -376,10 +376,10 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
         <div className="flex items-center gap-2 text-xs sm:text-sm text-stone-600 font-medium">
           <button
             onClick={onBack}
-            className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-[#525A43] text-[#2F3428] hover:text-white font-bold transition-all border border-stone-200 cursor-pointer shadow-2xs"
+            className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-stone-100 hover:bg-[#525A43] text-[#2F3428] hover:text-white font-bold transition-all border border-stone-200 cursor-pointer shadow-2xs"
           >
             <ArrowLeft className="w-4 h-4" />
-            <span>Back to All Categories</span>
+            <span>← تمام کیٹیگریز پر واپس جائیں (Back)</span>
           </button>
           <ChevronRight className="w-4 h-4 text-stone-300" />
           <span className="text-stone-400">Categories</span>
