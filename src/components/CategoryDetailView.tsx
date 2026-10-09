@@ -492,165 +492,22 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
 
       </section>
 
-      {/* ALL TYPES OF THIS CATEGORY (PRIMARY FEATURE REQUEST) */}
-      <section className="space-y-4 pt-2">
-        
-        {/* Section Heading */}
-        <div className="border-b border-stone-200 pb-3 flex flex-col sm:flex-row sm:items-end justify-between gap-2">
-          <div>
-            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-[#525A43]/10 text-[#525A43] text-xs font-bold mb-1.5">
-              <Layers className="w-3.5 h-3.5 text-[#525A43]" />
-              <span>Category Types & Formulations | اقسام و اقسامِ ادویات</span>
-            </div>
-            <h2 className="text-xl sm:text-2xl font-extrabold text-[#2F3428] font-serif">
-              All Types in {categoryInfo.name}
-            </h2>
-            <p className="text-xs text-stone-600 mt-0.5">
-              Select any formulation type below to instantly filter matching remedies and compounds.
-            </p>
-          </div>
-
-          {selectedSubTypeId !== 'all' && (
-            <button
-              onClick={() => setSelectedSubTypeId('all')}
-              className="self-start sm:self-auto px-3 py-1.5 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold flex items-center gap-1.5 border border-stone-300 cursor-pointer transition-all"
-            >
-              <FolderArchive className="w-3.5 h-3.5 text-[#525A43]" />
-              <span>Reset Type Filter (Show All)</span>
-            </button>
-          )}
-        </div>
-
-        {/* Quick Filter Pill Row */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-none">
-          <button
-            onClick={() => setSelectedSubTypeId('all')}
-            className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
-              selectedSubTypeId === 'all'
-                ? 'bg-[#525A43] text-white shadow-md border border-[#A1A696]'
-                : 'bg-white text-[#2F3428] hover:bg-stone-100 border border-stone-200'
-            }`}
-          >
-            <FolderOpen className="w-3.5 h-3.5" />
-            <span>All Types</span>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-              selectedSubTypeId === 'all' ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-500'
-            }`}>
-              {categoryProducts.length}
-            </span>
-          </button>
-
-          {subTypes.map((st) => {
-            const isSelected = selectedSubTypeId === st.id;
-            const count = subTypeCounts[st.id] || 0;
-
-            return (
-              <button
-                key={st.id}
-                onClick={() => setSelectedSubTypeId(st.id)}
-                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all flex items-center gap-2 cursor-pointer ${
-                  isSelected
-                    ? 'bg-[#525A43] text-white shadow-md border border-[#A1A696]'
-                    : 'bg-white text-[#2F3428] hover:bg-stone-100 border border-stone-200'
-                }`}
-              >
-                <span>{st.name}</span>
-                <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-mono ${
-                  isSelected ? 'bg-white/20 text-white' : 'bg-stone-100 text-stone-500'
-                }`}>
-                  {count}
-                </span>
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Grid of All Types Showcase Cards */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-1">
-          {subTypes.map((st) => {
-            const isSelected = selectedSubTypeId === st.id;
-            const count = subTypeCounts[st.id] || 0;
-
-            return (
-              <div
-                key={st.id}
-                onClick={() => setSelectedSubTypeId(isSelected ? 'all' : st.id)}
-                className={`group p-4 sm:p-5 rounded-2xl border-2 transition-all duration-300 cursor-pointer flex flex-col justify-between ${
-                  isSelected
-                    ? 'bg-[#525A43]/10 border-[#525A43] shadow-md ring-2 ring-[#525A43]/20'
-                    : 'bg-white border-stone-200 hover:border-[#A1A696] hover:shadow-md'
-                }`}
-              >
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <div className={`w-10 h-10 rounded-xl flex items-center justify-center shadow-2xs ${
-                      isSelected ? 'bg-[#525A43] text-white' : 'bg-stone-100 group-hover:bg-[#525A43]/10'
-                    }`}>
-                      {renderSubTypeIcon(st.iconType)}
-                    </div>
-                    <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded-full ${
-                      isSelected ? 'bg-[#525A43] text-white' : 'bg-stone-100 text-stone-600'
-                    }`}>
-                      {count} {count === 1 ? 'item' : 'items'}
-                    </span>
-                  </div>
-
-                  <div>
-                    <span className="text-[11px] font-serif text-[#525A43] font-bold block mb-0.5">
-                      {st.urduName}
-                    </span>
-                    <h3 className="font-extrabold text-[#2F3428] text-sm leading-snug group-hover:text-[#525A43] transition-colors">
-                      {st.name}
-                    </h3>
-                  </div>
-
-                  <p className="text-xs text-stone-600 leading-relaxed line-clamp-2">
-                    {st.description}
-                  </p>
-                </div>
-
-                <div className="pt-3 mt-3 border-t border-stone-100 flex items-center justify-between text-xs">
-                  <span className={`font-bold ${isSelected ? 'text-[#525A43]' : 'text-stone-500'}`}>
-                    {isSelected ? 'Active Type' : 'Filter by this Type'}
-                  </span>
-                  <div className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                    isSelected ? 'bg-[#525A43] text-white' : 'bg-stone-100 text-stone-400 group-hover:text-[#525A43]'
-                  }`}>
-                    {isSelected ? <Check className="w-3.5 h-3.5" /> : <ChevronRight className="w-3.5 h-3.5" />}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-
-      </section>
-
-      {/* PRODUCTS SECTION SHOWING REMEDIES OF THIS CATEGORY / TYPE */}
+      {/* PRODUCTS SECTION SHOWING REMEDIES OF THIS CATEGORY */}
       <section className="space-y-5 pt-4">
         
         {/* Active Filter Bar & Controls */}
         <div className="bg-white p-4 sm:p-5 rounded-2xl border border-stone-200 shadow-2xs flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
             <div className="flex items-center gap-2">
-              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2 py-0.5 rounded-full bg-[#525A43]/10 text-[#525A43]">
-                {selectedSubTypeId === 'all' ? 'All Types Selected' : 'Filtered by Type'}
+              <span className="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-0.5 rounded-full bg-[#525A43]/10 text-[#525A43] font-serif">
+                {categoryInfo.urduName || categoryInfo.name}
               </span>
               <span className="text-xs text-stone-500">
                 Found {filteredProducts.length} {filteredProducts.length === 1 ? 'remedy' : 'remedies'}
               </span>
             </div>
-            <h3 className="text-lg font-bold font-serif text-[#2F3428] mt-1">
-              {activeSubTypeObj ? (
-                <>
-                  Showing: <span className="text-[#525A43] font-black">{activeSubTypeObj.name}</span>
-                  <span className="text-xs font-serif text-stone-500 ml-2">({activeSubTypeObj.urduName})</span>
-                </>
-              ) : (
-                <>
-                  Showing All Remedies in <span className="text-[#525A43] font-black">{categoryInfo.name}</span>
-                </>
-              )}
+            <h3 className="text-lg sm:text-xl font-bold font-serif text-[#2F3428] mt-1">
+              Showing All Remedies in <span className="text-[#525A43] font-black">{categoryInfo.name}</span>
             </h3>
           </div>
 
@@ -701,24 +558,23 @@ export const CategoryDetailView: React.FC<CategoryDetailViewProps> = ({
             <h3 className="text-base font-bold text-[#2F3428]">
               {searchInCat 
                 ? `No remedies matching "${searchInCat}"` 
-                : `No remedies currently listed under ${activeSubTypeObj?.name || 'this type'}`}
+                : `No remedies currently listed in ${categoryInfo.name}`}
             </h3>
             <p className="text-xs text-stone-500 max-w-sm mx-auto">
-              You can reset the formulation type filter to view all remedies in {categoryInfo.name}, or contact our Hakeem for custom compound preparations.
+              You can search for another remedy or contact our Hakeem on WhatsApp for custom Unani preparations.
             </p>
             <div className="pt-2 flex flex-wrap items-center justify-center gap-3">
-              <button
-                onClick={() => {
-                  setSelectedSubTypeId('all');
-                  setSearchInCat('');
-                }}
-                className="px-4 py-2 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white text-xs font-bold transition-colors shadow-sm"
-              >
-                Show All {categoryInfo.name} Remedies ({categoryProducts.length})
-              </button>
+              {searchInCat && (
+                <button
+                  onClick={() => setSearchInCat('')}
+                  className="px-4 py-2 rounded-xl bg-[#525A43] hover:bg-[#3F4633] text-white text-xs font-bold transition-colors shadow-sm cursor-pointer"
+                >
+                  Clear Search ({categoryProducts.length} Remedies)
+                </button>
+              )}
               <button
                 onClick={onBack}
-                className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold transition-colors border border-stone-200"
+                className="px-4 py-2 rounded-xl bg-stone-100 hover:bg-stone-200 text-[#2F3428] text-xs font-bold transition-colors border border-stone-200 cursor-pointer"
               >
                 Explore Other Categories
               </button>
