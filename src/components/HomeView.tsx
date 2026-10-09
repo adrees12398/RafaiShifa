@@ -165,32 +165,11 @@ export const HomeView: React.FC<HomeViewProps> = ({
     ? propCategories
     : INITIAL_CATEGORIES;
 
-  // Find any product categories that may not be in the configured categories
-  const configuredNames = new Set(baseCategoryList.map((c) => c.name.toLowerCase()));
-  const extraProductCategories = Array.from(
-    new Set(
-      products
-        .map((p) => p.category)
-        .filter((c) => c && c.toLowerCase() !== 'all' && !configuredNames.has(c.toLowerCase()))
-    )
-  ).map((cat): CategoryFolderInfo => ({
-    id: cat.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
-    name: cat,
-    urduName: 'خصوصی طبی زمرہ',
-    folderType: `Specialized Herbal Formulation (${cat})`,
-    folderTypeUrdu: 'خصوصی طبی شعبہ',
-    badge: 'Custom Category',
-    description: `Specialized herbal preparations and remedies filed under ${cat}.`,
-    focusArea: 'Targeted wellness and specialized treatment',
-    imageUrl: '/products/growmax.jpeg'
-  }));
-
   // Ensure 'All' is at the beginning of the categories list
   const hasAllInList = baseCategoryList.some((c) => c.name.toLowerCase() === 'all');
   const categoryFolders: CategoryFolderInfo[] = [
     ...(hasAllInList ? [] : [masterAllFolder]),
-    ...baseCategoryList,
-    ...extraProductCategories
+    ...baseCategoryList
   ];
 
   const activeFolder = categoryFolders.find(
