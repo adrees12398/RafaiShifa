@@ -109,6 +109,38 @@ export default function App() {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, []);
 
+  // Dynamic SEO Page Title & Meta Description on Navigation
+  useEffect(() => {
+    let pageTitle = 'RafaiShifa - Authentic Unani & Tib-e-Nabvi Herbal Medicine Store | رافع شفاء دواخانہ';
+    let metaDesc = 'RafaiShifa (رافع شفاء) - Authentic Unani & Islamic Tib-e-Nabvi herbal medicine store in Lahore, Pakistan with Cash on Delivery nationwide.';
+
+    if (selectedProduct) {
+      pageTitle = `${selectedProduct.urduName || selectedProduct.name} - Rs. ${selectedProduct.price} | RafaiShifa`;
+      metaDesc = `${selectedProduct.name} (${selectedProduct.urduName || 'یونانی دوا'}). ${selectedProduct.description || ''}. Order online with Cash on Delivery across Pakistan.`;
+    } else if (categoryScreen) {
+      pageTitle = `${categoryScreen} - Authentic Herbal Remedies | RafaiShifa`;
+      metaDesc = `Explore authentic Unani herbal remedies and classical preparations in ${categoryScreen} at RafaiShifa with Cash on Delivery across Pakistan.`;
+    } else if (activeTab === 'blog') {
+      pageTitle = 'Tib Blog & Remedies - Prophetic Health & Unani Wisdom | RafaiShifa';
+      metaDesc = 'Read authentic Unani Tib articles, Kalonji benefits, Prophetic herbal guides, and holistic health tips by qualified Hakeems.';
+    } else if (activeTab === 'help') {
+      pageTitle = 'Help & FAQs - Orders, Delivery & Consultations | RafaiShifa';
+      metaDesc = 'Find answers to common questions about Cash on Delivery, free shipping, Unani dosages, and Hakeem consultation at RafaiShifa.';
+    } else if (activeTab === 'team') {
+      pageTitle = 'About Our Chief Physician & Hakeems | Dr. Hakeem Hafiz Mohsin Ali | RafaiShifa';
+      metaDesc = 'Meet Chief Physician Dr. Hakeem Hafiz Mohsin Ali (Gold Medalist, 25+ years experience) and the expert herbal team at RafaiShifa.';
+    } else if (activeTab === 'admin') {
+      pageTitle = 'Admin Portal - RafaiShifa Management';
+      metaDesc = 'Secure admin portal for RafaiShifa store and order management.';
+    }
+
+    document.title = pageTitle;
+    const descTag = document.querySelector('meta[name="description"]');
+    if (descTag) {
+      descTag.setAttribute('content', metaDesc);
+    }
+  }, [activeTab, categoryScreen, selectedProduct]);
+
   const handleAdminLogout = () => {
     setIsAdminLoggedIn(false);
     setActiveTab('home');

@@ -1,0 +1,19 @@
+# robots.txt for RafaiShifa (https://rafaishifa.com)
+User-agent: *
+Allow: /
+Disallow: /admin
+Disallow: /?admin
+Disallow: /#admin
+
+# Crawlers
+User-agent: Googlebot
+Allow: /
+Disallow: /admin
+
+User-agent: Bingbot
+Allow: /
+Disallow: /admin
+
+# Host and Sitemap
+Host: https://rafaishifa.com
+Sitemap: https://rafaishifa.com/sitemap.xml
