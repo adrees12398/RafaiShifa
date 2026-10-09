@@ -263,45 +263,6 @@ export const HomeView: React.FC<HomeViewProps> = ({
           </div>
         </div>
 
-        {/* Popular Trending Searches Chips */}
-        <div className="mt-3 flex items-center gap-1.5 sm:gap-2 overflow-x-auto pb-1 scrollbar-none text-xs">
-          <span className="text-[11px] font-bold text-[#525A43] shrink-0 font-serif flex items-center gap-1">
-            <Sparkles className="w-3 h-3 text-[#A1A696]" />
-            <span>Popular:</span>
-          </span>
-          {['LiverBoost', 'SlimAura', 'Zafran', 'Kalonji', 'Tilla-e-Azam', 'Growmax'].map((keyword) => {
-            const isSelected = searchQuery.toLowerCase() === keyword.toLowerCase();
-            return (
-              <button
-                key={keyword}
-                onClick={() => {
-                  setSearchQuery(isSelected ? '' : keyword);
-                  if (!isSelected) {
-                    setSelectedCategory('All');
-                  }
-                  const el = document.getElementById('products-section');
-                  if (el) el.scrollIntoView({ behavior: 'smooth' });
-                }}
-                className={`px-3 py-1 rounded-full text-[11px] font-medium transition-all shrink-0 border ${
-                  isSelected
-                    ? 'bg-[#525A43] text-white border-[#525A43] shadow-sm'
-                    : 'bg-white hover:bg-stone-50 text-[#2F3428] border-stone-200'
-                }`}
-              >
-                {keyword}
-              </button>
-            );
-          })}
-          {searchQuery && (
-            <button
-              onClick={() => setSearchQuery('')}
-              className="px-2.5 py-1 rounded-full text-[10px] font-bold text-red-600 bg-red-50 hover:bg-red-100 transition-colors shrink-0 border border-red-200"
-            >
-              Reset ✕
-            </button>
-          )}
-        </div>
-
         {/* Pansaar-Style Quick Category Circles Bar (App-Style Story Avatars) */}
         <div className="mt-4 bg-white rounded-2xl sm:rounded-3xl p-3 sm:p-4 border border-[#A1A696]/30 shadow-sm relative">
           <div className="flex flex-wrap items-center justify-between gap-2 mb-2 px-1">
